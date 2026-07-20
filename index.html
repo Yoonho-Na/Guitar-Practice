@@ -2764,7 +2764,25 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 /* ===================== 서비스워커 등록 ===================== */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      // 새 버전이 올라왔는지 확인하고, 준비되면 한 번만 자동 새로고침한다
+      reg.update().catch(()=>{});
+      reg.addEventListener('updatefound', ()=>{
+        const sw=reg.installing;
+        if(!sw) return;
+        sw.addEventListener('statechange', ()=>{
+          if(sw.state==='installed' && navigator.serviceWorker.controller){
+            sw.postMessage('skipWaiting');
+          }
+        });
+      });
+    }).catch(()=>{});
+    let reloaded=false;
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+      if(reloaded) return;      // 무한 새로고침 방지
+      reloaded=true;
+      location.reload();
+    });
   });
 }
 </script>
