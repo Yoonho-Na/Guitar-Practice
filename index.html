@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>연습</title>
-<meta name="description" content="기타/현악기 연습을 위한 메트로놈, 튜너, 스케일, 청음, 리듬, 잼 세션 올인원 앱">
+<meta name="description" content="기타/현악기 연습을 위한 메트로놈, 튜너, 스케일, 트레이너, 잼 세션 올인원 앱">
 <meta name="theme-color" content="#d3d2cc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -38,6 +38,7 @@
 
     /* 유일한 유채색 — 차분한 슬레이트. 작동 중일 때만. */
     --signal:#c1603d;
+    --signal-display:#e8794d;
     --signal-soft:rgba(193,96,61,.13);
 
     --r:9px;
@@ -66,6 +67,7 @@
       --line:#3b3a35;
       --line-soft:#312f2b;
       --signal:#d98a68;
+      --signal-display:#e8794d;
       --signal-soft:rgba(217,138,104,.16);
     }
   }
@@ -245,14 +247,14 @@
     font-weight:500; text-transform:uppercase;
   }
 
-  .beat-dots{display:flex; justify-content:center; gap:11px; margin:18px 0;}
+  .beat-dots{display:flex; justify-content:center; gap:11px; margin:20px 0 2px;}
   .beat-dot{
-    width:8px; height:8px; border-radius:50%;
-    background:transparent; border:1px solid var(--ink-3);
+    width:9px; height:9px; border-radius:50%;
+    background:transparent; border:1px solid rgba(232,230,218,.32);
     transition:background .05s linear, border-color .05s linear, transform .05s linear;
   }
-  .beat-dot.on{ background:var(--ink-2); border-color:var(--ink-2); }
-  .beat-dot.accent-on{ background:var(--signal); border-color:var(--signal); transform:scale(1.3); }
+  .beat-dot.on{ background:var(--display-ink); border-color:var(--display-ink); }
+  .beat-dot.accent-on{ background:var(--signal-display); border-color:var(--signal-display); transform:scale(1.35); }
 
   /* Circular dial */
   .pulse-ring{
@@ -309,8 +311,9 @@
   }
   /* 파선 원으로 쐐기를 만든다 — 벡터라 어떤 배율에서도 선명하다 */
   .ring{
-    fill:none; stroke:var(--display-ink);
-    opacity:.34;
+    fill:none;
+    stroke:var(--signal-display);     /* 어두운 창 위에서 도는 오렌지 */
+    opacity:.62;
     transform-box:view-box; transform-origin:86px 86px;
     transition:opacity .25s var(--ease);
   }
@@ -336,7 +339,7 @@
     background:var(--display);
     display:flex; align-items:center; justify-content:center;
   }
-  .strobe.in-tune .ring{ opacity:.92; }
+  .strobe.in-tune .ring{ opacity:1; }
   .strobe.in-tune .strobe-ring{ border-color:var(--signal); }
 
   .string-btns{display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-top:12px;}
@@ -564,11 +567,11 @@
   .feedback-msg.no{ color:var(--signal); }
 
   /* ---------- 리듬: 비트 그리드 ---------- */
-  .beat-grid{ overflow-x:auto; -webkit-overflow-scrolling:touch; padding:4px 0; }
-  .grid-row{ display:flex; gap:4px; justify-content:center; min-width:min-content; padding:8px 2px; }
+  .beat-grid{ padding:4px 0; overflow:hidden; }
+  .grid-row{ --gc:20px; display:flex; justify-content:center; align-items:center; padding:10px 2px; }
   .gcell{
     position:relative;
-    width:20px; height:20px; border-radius:50%; flex-shrink:0;
+    width:var(--gc); height:var(--gc); border-radius:50%; flex-shrink:0;
     border:1px solid var(--line);
     background:transparent;
     display:flex; align-items:center; justify-content:center;
@@ -581,7 +584,7 @@
     content:''; position:absolute; left:50%; top:50%;
     width:44px; height:44px; transform:translate(-50%,-50%);
   }
-  .gcell.beat{ width:26px; height:26px; font-size:0.625rem; border-color:var(--ink-3); align-self:center; }
+  .gcell.beat{ width:calc(var(--gc) * 1.32); height:calc(var(--gc) * 1.32); font-size:0.625rem; border-color:var(--ink-3); }
   .gcell.on{ background:var(--ink-2); border-color:var(--ink-2); color:var(--body); }
   .gcell.beat.on{ background:var(--ink); border-color:var(--ink); }
   .gcell:active{ transform:scale(.88); }
@@ -603,6 +606,126 @@
     -webkit-font-smoothing:antialiased;
   }
   .tempo-readout .u{ font-size:0.5938rem; color:var(--ink-3); font-weight:500; letter-spacing:0.0545em; }
+
+  /* ---------- 메트로놈 템포 키 ---------- */
+  .tempo-keys{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0; }
+  .tempo-keys .key{
+    padding:14px 0; font-size:1.0625rem; font-weight:400; line-height:1;
+    min-height:50px;                     /* 손가락으로 누르기 충분한 크기 */
+  }
+  .tempo-keys .key.tap{ font-size:0.8125rem; font-weight:500; letter-spacing:.09em; }
+
+  /* ---------- 프렛보드 ---------- */
+  .fretboard{ --fc:32px; }
+  .fret-cell{
+    width:var(--fc); height:calc(var(--fc) * 0.92);
+    font-size:0.6875rem;                 /* 맞춤 모드 기본 */
+  }
+  .fretboard.zoomed .fret-cell{ font-size:0.875rem; }
+  .fretboard.zoomed .fret-num{ font-size:0.75rem; }
+  .fret-num{ width:var(--fc); }
+  .fret-num.mark{ color:var(--ink-2); font-weight:700; }
+
+
+  .fretboard-scroll{ overflow-x:auto; }
+  .fretboard-scroll.fit{ overflow-x:hidden; }
+  .fretboard-scroll.fit .fretboard{ display:flex; }
+
+  /* ---------- 구성음 칩 (음이름 + 도수) ---------- */
+  #scaleNotesList{ display:flex; flex-wrap:wrap; gap:6px; }
+  .note-chip{
+    display:flex; align-items:baseline; gap:6px;
+    padding:8px 14px;
+    border:1px solid var(--line); border-radius:var(--r-pill);
+    background:var(--key); cursor:pointer; font-family:inherit;
+    transition:background .1s var(--ease-out), transform .1s var(--ease-out);
+  }
+  .note-chip:active{ transform:scale(.95); background:var(--key-press); }
+  .note-chip .nm{ font-size:0.8125rem; font-weight:500; letter-spacing:.01em; }
+  .note-chip .dg{ font-size:0.625rem; color:var(--ink-3); font-weight:500; letter-spacing:.03em; font-variant-numeric:tabular-nums; }
+  .note-chip.root{ background:var(--signal); border-color:var(--signal); }
+  .note-chip.root .nm{ color:#fff; }
+  .note-chip.root .dg{ color:rgba(255,255,255,.72); }
+
+  /* ---------- 메트로놈: 좌 숫자·키 / 우 발광 오브 ---------- */
+  .metro-main{ display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center; }
+  .metro-left{ min-width:0; display:flex; flex-direction:column; align-items:stretch; gap:10px; }
+  .metro-left .bpm-display{ text-align:center; }
+  .metro-left .bpm-display .num{ font-size:3.5rem; }
+  .metro-left .bpm-display .lbl{ color:var(--ink-3); margin-top:2px; }
+
+  .metro-orb{
+    position:relative;
+    width:100%; max-width:132px; aspect-ratio:1/1; border-radius:50%;
+    background:var(--key);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; font-family:inherit;
+    transition:background .1s var(--ease-out), border-color .1s var(--ease-out), transform .12s var(--ease-out);
+  }
+  .metro-orb:active{ transform:scale(.96); }
+  /* 다이얼 눈금 */
+  .metro-orb::before{
+    content:''; position:absolute; inset:9px; border-radius:50%;
+    background:repeating-conic-gradient(from 0deg, var(--ink-3) 0deg 0.6deg, transparent 0.6deg 30deg);
+    -webkit-mask:radial-gradient(circle, transparent 0 40px, #000 40px);
+    mask:radial-gradient(circle, transparent 0 40px, #000 40px);
+    opacity:.5; pointer-events:none;
+  }
+  /* 발광 링 — opacity만 움직여 합성 단계에서 처리된다 */
+  .orb-glow{
+    position:absolute; inset:-7px; border-radius:50%;
+    box-shadow:0 0 0 7px var(--signal-soft), 0 0 22px 5px var(--signal-soft);
+    opacity:0; pointer-events:none;
+    transition:opacity .12s var(--ease-out);
+  }
+  .orb-label{
+    position:relative; z-index:2;
+    font-size:0.6875rem; font-weight:500; letter-spacing:.06em;
+    color:var(--ink-3); transition:color .1s var(--ease-out);
+  }
+  .metro-orb.running{ border-color:var(--signal); }
+  .metro-orb.running .orb-label{ color:var(--signal); }
+  /* 박자마다 오렌지로 발광 */
+  .metro-orb.flash{
+    background:var(--signal); border-color:var(--signal);
+  }
+  .metro-orb.flash .orb-label{ color:#fff; }
+  .metro-orb.flash .orb-glow{ opacity:1; }
+
+  @media (max-width:360px){
+    .metro-orb{ width:96px; height:96px; }
+    .metro-left .bpm-display .num{ font-size:3.25rem; }
+  }
+
+  /* 메트로놈 우측: 오브 + 박자 점 */
+  .metro-right{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .metro-right .beat-dots{ margin:0; }
+  .metro-card .beat-dot{ border-color:var(--ink-3); }
+  .metro-card .beat-dot.on{ background:var(--ink); border-color:var(--ink); }
+  .metro-card .beat-dot.accent-on{ background:var(--signal); border-color:var(--signal); }
+  .tempo-keys .key{ touch-action:none; }      /* 길게 누르기 중 스크롤 방지 */
+  .metro-left .tap{ width:100%; }
+
+  @media (max-width:340px){
+    .metro-left .bpm-display .num{ font-size:2.875rem; }
+  }
+
+  /* ---------- 트레이너: 하위 모드 전환 ---------- */
+  .seg{
+    display:grid; grid-template-columns:1fr 1fr; gap:4px;
+    background:var(--body-hi); border-radius:var(--r-pill); padding:4px;
+  }
+  .seg-btn{
+    border:none; background:transparent; border-radius:var(--r-pill);
+    padding:11px 0; cursor:pointer; font-family:inherit;
+    font-size:0.8125rem; font-weight:500; color:var(--ink-3);
+    transition:background .14s var(--ease-out), color .14s var(--ease-out);
+  }
+  .seg-btn:active{ transform:scale(.97); }
+  .seg-btn.active{ background:var(--ink); color:var(--body); }
+  .trainer-pane{ display:none; }
+  .trainer-pane.active{ display:block; animation:in .24s var(--ease-out); }
 </style>
 </head>
 <body>
@@ -615,18 +738,26 @@
   <main>
     <!-- METRONOME -->
     <section class="tabpanel active" id="tab-metronome">
-      <div class="card">
-        <div class="display">
-          <div class="bpm-display">
-            <div class="num" id="bpmNum">100</div>
-            <div class="lbl">BPM</div>
+      <div class="card metro-card">
+        <div class="metro-main">
+          <div class="metro-left">
+            <div class="bpm-display">
+              <div class="num" id="bpmNum">100</div>
+              <div class="lbl">BPM</div>
+            </div>
+            <div class="tempo-keys">
+              <button class="btn key" id="bpmMinus" aria-label="느리게">−</button>
+              <button class="btn key" id="bpmPlus" aria-label="빠르게">+</button>
+            </div>
+            <button class="btn key tap" id="tapTempoBtn">TAP</button>
           </div>
-        </div>
-        <div class="slider-wrap"><input type="range" id="bpmSlider" min="30" max="260" value="100"><div class="slider-ticks"></div></div>
-        <div class="row" style="margin-top:10px;">
-          <button class="btn" id="bpmMinus">-1</button>
-          <button class="btn" id="tapTempoBtn">TAP</button>
-          <button class="btn" id="bpmPlus">+1</button>
+          <div class="metro-right">
+            <button class="metro-orb" id="metroStart" aria-label="시작 또는 정지">
+              <span class="orb-glow"></span>
+              <span class="orb-label" id="orbLabel">시작</span>
+            </button>
+            <div class="beat-dots" id="beatDots"></div>
+          </div>
         </div>
       </div>
 
@@ -651,11 +782,6 @@
         </div>
       </div>
 
-      <div class="card" style="text-align:center;">
-        <div class="pulse-ring" id="pulseRing">대기</div>
-        <div class="beat-dots" id="beatDots"></div>
-        <button class="btn primary wide" id="metroStart">시작</button>
-      </div>
     </section>
 
     <!-- TUNER -->
@@ -707,11 +833,14 @@
         </select>
       </div>
       <div class="card">
-        <h2>프렛보드 · 0–15프렛</h2>
-        <div class="fretboard-scroll">
+        <div class="row" style="margin-bottom:12px;">
+          <h2 style="margin:0;">프렛보드</h2>
+          <div class="pill-group" id="fretZoom"></div>
+        </div>
+        <div class="fretboard-scroll" id="fretScroll">
           <div class="fretboard" id="fretboard"></div>
         </div>
-        <p class="hint" style="margin-top:8px;">진한 색 = 루트음 · 회색 = 스케일 구성음</p>
+        <p class="hint" style="margin-top:10px;">진한 색 = 루트음 · 회색 = 스케일 구성음</p>
       </div>
       <div class="card">
         <h2>구성음</h2>
@@ -719,8 +848,16 @@
       </div>
     </section>
 
-    <!-- EAR TRAINING -->
-    <section class="tabpanel" id="tab-ear">
+    <!-- TRAINER (청음 + 리듬) -->
+    <section class="tabpanel" id="tab-trainer">
+      <div class="card" style="padding:10px;">
+        <div class="seg" id="trainerSeg">
+          <button class="seg-btn active" data-mode="ear">청음</button>
+          <button class="seg-btn" data-mode="rhythm">리듬</button>
+        </div>
+      </div>
+
+      <div class="trainer-pane active" id="pane-ear">
       <div class="card">
         <h2>훈련 종류</h2>
         <div class="pill-group" id="earModes"></div>
@@ -751,10 +888,10 @@
         <div class="feedback-msg" id="earFeedback"></div>
         <div class="choice-list" id="earChoices"></div>
       </div>
-    </section>
+    
+      </div>
 
-    <!-- RHYTHM -->
-    <section class="tabpanel" id="tab-rhythm">
+      <div class="trainer-pane" id="pane-rhythm">
       <div class="card">
         <div class="beat-grid" id="beatGrid"></div>
         <p class="hint" style="text-align:center; margin:6px 0 0;">칸을 눌러 직접 편집할 수 있습니다</p>
@@ -805,6 +942,8 @@
       <div class="card">
         <h2>프리셋</h2>
         <div class="pill-group" id="rhyPresets"></div>
+      </div>
+    
       </div>
     </section>
 
@@ -860,8 +999,7 @@
     <button class="tab-btn active" data-tab="metronome"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M7.2 2.5h5.6l2.7 15H4.5z"/><path d="M13.8 6.2 6.2 13.4"/></svg></span>메트로놈</button>
     <button class="tab-btn" data-tab="tuner"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M10 3v9"/><circle cx="10" cy="15" r="2.2"/><path d="M3.5 7h3M13.5 7h3"/></svg></span>튜너</button>
     <button class="tab-btn" data-tab="scales"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2.5 5h15M2.5 10h15M2.5 15h15"/><circle cx="6.5" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="15" r="1.5" fill="currentColor" stroke="none"/></svg></span>스케일</button>
-    <button class="tab-btn" data-tab="ear"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 12V8a7 7 0 0 1 14 0v4"/><path d="M3 12a2 2 0 0 0 2 2h1V10H5a2 2 0 0 0-2 2Z"/><path d="M17 12a2 2 0 0 1-2 2h-1V10h1a2 2 0 0 1 2 2Z"/></svg></span>청음</button>
-    <button class="tab-btn" data-tab="rhythm"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="10" cy="10" r="7.2"/><path d="M10 5.6V10l3 1.8"/></svg></span>리듬</button>
+    <button class="tab-btn" data-tab="trainer"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M3 12V8.5a7 7 0 0 1 14 0V12"/><path d="M3 12a2 2 0 0 0 2 2h1v-4H5a2 2 0 0 0-2 2Z"/><path d="M17 12a2 2 0 0 1-2 2h-1v-4h1a2 2 0 0 1 2 2Z"/></svg></span>트레이너</button>
     <button class="tab-btn" data-tab="jam"><span class="ic"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="6" cy="14.5" r="2.4"/><circle cx="15" cy="12.5" r="2.4"/><path d="M8.4 14.5v-10l9 -2v10"/></svg></span>잼</button>
   </nav>
 </div>
@@ -879,7 +1017,7 @@ function midiToName(midi){ return NOTE_NAMES[((midi%12)+12)%12] + (Math.floor(mi
 function midiToFreq(midi){ return 440 * Math.pow(2, (midi-69)/12); }
 function pcName(pc){ return NOTE_NAMES[((pc%12)+12)%12]; }
 
-function playTone(freq, duration=0.6, when=0, type='sine', gainVal=0.18){
+function playTone(freq, duration=0.6, when=0, type='sine', gainVal=0.43){
   const ctx = getCtx();
   const t0 = ctx.currentTime + Math.max(when,0);
   const osc = ctx.createOscillator();
@@ -889,7 +1027,7 @@ function playTone(freq, duration=0.6, when=0, type='sine', gainVal=0.18){
   gain.gain.setValueAtTime(0.0001, t0);
   gain.gain.exponentialRampToValueAtTime(gainVal, t0+0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0+duration);
-  osc.connect(gain).connect(ctx.destination);
+  osc.connect(gain).connect(getMaster());
   osc.start(t0);
   osc.stop(t0+duration+0.05);
   return {osc, gain};
@@ -901,183 +1039,212 @@ function playClick(when, accent){
   osc.type = 'square';
   osc.frequency.value = accent ? 1500 : 900;
   const gain = ctx.createGain();
-  gain.gain.setValueAtTime(accent?0.35:0.2, t0);
+  gain.gain.setValueAtTime(accent?0.62:0.40, t0);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.045);
-  osc.connect(gain).connect(ctx.destination);
+  osc.connect(gain).connect(getMaster());
   osc.start(t0);
   osc.stop(t0+0.06);
 }
 
 /* ===================== 악기 음색 =====================
-   사인파는 배음이 없어 작게 들리고 음정을 가늠하기 어렵다.
-   실제 악기의 물리 모델과 배음 구조를 흉내내 또렷하게 만든다.
+   싸구려로 들리는 원인은 대개 세 가지다.
+   (1) 배음 구조가 단순하다  (2) 공간감이 없다  (3) 음마다 음량이 들쭉날쭉하다
+   각각 물리 모델 · 리버브 · 실측 정규화로 해결한다.
    ===================================================== */
 
-/* ---- 마스터 버스: 전체 음량을 한곳에서 관리 ---- */
-let __master = null;
+/* ---- 마스터: 드라이 + 리버브 센드 ---- */
+let __master=null, __send=null;
+function makeIR(ctx, dur, decay){
+  const n=Math.floor(ctx.sampleRate*dur);
+  const b=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let ch=0; ch<2; ch++){
+    const d=b.getChannelData(ch);
+    for(let i=0;i<n;i++){
+      const t=i/n;
+      d[i]=(Math.random()*2-1)*Math.pow(1-t,decay);
+    }
+    // 초기 반사 — 이게 있어야 '방' 느낌이 난다
+    [0.0113,0.0197,0.0291,0.0431,0.0617].forEach((tt,k)=>{
+      const idx=Math.floor(tt*ctx.sampleRate*(1+ch*0.07));
+      if(idx<n) d[idx]+=(0.55-k*0.09)*(Math.random()>0.5?1:-1);
+    });
+  }
+  return b;
+}
 function getMaster(){
-  const ctx = getCtx();
+  const ctx=getCtx();
   if(!__master){
-    __master = ctx.createGain();
-    __master.gain.value = 0.9;
-    const comp = ctx.createDynamicsCompressor();
-    comp.threshold.value = -14;
-    comp.knee.value = 22;
-    comp.ratio.value = 5;
-    comp.attack.value = 0.004;
-    comp.release.value = 0.22;
+    __master=ctx.createGain(); __master.gain.value=0.9;
+    const comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-15; comp.knee.value=24; comp.ratio.value=4.5;
+    comp.attack.value=0.005; comp.release.value=0.25;
     __master.connect(comp).connect(ctx.destination);
+
+    // 리버브 센드
+    try{
+      const conv=ctx.createConvolver();
+      conv.buffer=makeIR(ctx,1.9,2.8);
+      const wet=ctx.createGain(); wet.gain.value=0.5;
+      const pre=ctx.createBiquadFilter();
+      pre.type='highpass'; pre.frequency.value=260;   // 저역은 울리지 않게
+      __send=ctx.createGain(); __send.gain.value=1;
+      __send.connect(pre).connect(conv).connect(wet).connect(comp);
+    }catch(e){ __send=null; }
   }
   return __master;
 }
+function sendTo(node, amount){
+  if(!__send || !amount) return;
+  const ctx=getCtx();
+  const g=ctx.createGain(); g.gain.value=amount;
+  node.connect(g).connect(__send);
+}
 
-/* ---- 뜯은 현 (Karplus-Strong) ----
-   짧은 잡음을 지연선에 넣고 저역통과 피드백을 돌리면
-   현이 진동하며 고음부터 사라지는 실제 거동이 그대로 재현된다. */
-const __pluckCache = new Map();
-function makePluckBuffer(ctx, freq, dur){
-  const key = freq.toFixed(3)+'@'+dur;
-  if(__pluckCache.has(key)) return __pluckCache.get(key);
-
-  const sr = ctx.sampleRate;
-  const n  = Math.floor(sr*dur);
-  const buf= ctx.createBuffer(1, n, sr);
-  const out= buf.getChannelData(0);
-
-  // 목표 주기(샘플). 정수로 반올림하면 음정이 최대 5센트까지 틀어지므로
-  // 소수점 지연을 선형보간으로 구현한다 — 기준음은 정확해야 의미가 있다.
-  const P = sr/freq;
-  const L = Math.max(4, Math.ceil(P) + 2);
-  const line = new Float32Array(L);
-
-  // 초기 여기: 잡음을 살짝 저역통과해 날카로운 어택을 눌러준다
-  let p0 = 0;
-  const fill = Math.min(L, Math.floor(P));
-  for(let i=0;i<fill;i++){
-    const w = Math.random()*2-1;
-    p0 = p0*0.82 + w*0.18;
-    line[i] = p0;
+/* ---- JS 바이쿼드 (버퍼를 미리 가공하고 음량을 실측하기 위해) ---- */
+function __bq(type,f0,Q,gDb,sr){
+  f0=Math.min(Math.max(f0,20),sr/2.2);
+  const w=2*Math.PI*f0/sr,c=Math.cos(w),s=Math.sin(w),al=s/(2*Q),A=Math.pow(10,(gDb||0)/40);
+  let b0,b1,b2,a0,a1,a2;
+  if(type==='highpass'){b0=(1+c)/2;b1=-(1+c);b2=(1+c)/2;a0=1+al;a1=-2*c;a2=1-al;}
+  else if(type==='peaking'){b0=1+al*A;b1=-2*c;b2=1-al*A;a0=1+al/A;a1=-2*c;a2=1-al/A;}
+  else {b0=(1-c)/2;b1=1-c;b2=(1-c)/2;a0=1+al;a1=-2*c;a2=1-al;}
+  return{b0:b0/a0,b1:b1/a0,b2:b2/a0,a1:a1/a0,a2:a2/a0};
+}
+function __filt(x,co){
+  let x1=0,x2=0,y1=0,y2=0;
+  for(let i=0;i<x.length;i++){
+    const v=co.b0*x[i]+co.b1*x1+co.b2*x2-co.a1*y1-co.a2*y2;
+    x2=x1;x1=x[i];y2=y1;y1=v;x[i]=v;
   }
+  return x;
+}
 
-  // 저역통과 피드백이 반 샘플의 지연을 더하므로 그만큼 빼서 보정한다
-  const delay = P - 0.5;
-  const damping = 0.999 - Math.min(0.004, 12/P);
+/* ---- 어쿠스틱 기타 (Karplus-Strong + 통울림 포먼트) ----
+   소수점 지연으로 음정을 정확히 맞추고(정수 반올림 시 최대 5센트 오차),
+   드레드넛 바디의 공진(헬름홀츠 100Hz · 톱 204Hz · 중역 430Hz)을 얹는다.
+   마지막에 '휴대폰 스피커가 실제로 낼 수 있는 대역'의 에너지를 재서 정규화하므로
+   저음 6번줄과 고음 1번줄의 음량이 같아진다. */
+const __gtrCache=new Map();
+function makeGuitarBuffer(ctx, freq, dur){
+  const key=freq.toFixed(2)+'@'+dur;
+  if(__gtrCache.has(key)) return __gtrCache.get(key);
+  const sr=ctx.sampleRate, n=Math.floor(sr*dur);
+  const buf=ctx.createBuffer(1,n,sr);
+  const out=buf.getChannelData(0);
 
-  let wp = fill % L, prev = 0;
+  const P=sr/freq, L=Math.max(4,Math.ceil(P)+2);
+  const line=new Float32Array(L);
+  // 낮은 음일수록 밝게 뜯어 스피커가 낼 수 있는 대역을 확보한다
+  const lpAmt=0.62-0.30*Math.min(1,Math.max(0,(330-freq)/300));
+  let p0=0;
+  const fill=Math.min(L,Math.floor(P));
+  for(let i=0;i<fill;i++){ const w=Math.random()*2-1; p0=p0*lpAmt+w*(1-lpAmt); line[i]=p0; }
+
+  const delay=P-0.5;
+  const damping=0.9995-Math.min(0.0035,9/P);
+  let wp=fill%L, prev=0;
   for(let i=0;i<n;i++){
-    const rpos = wp - delay;
-    const r0 = Math.floor(rpos);
-    const fr = rpos - r0;
-    const a = line[((r0 % L) + L) % L];
-    const b = line[(((r0+1) % L) + L) % L];
-    const s = a + (b - a) * fr;          // 소수점 지연 = 정확한 음정
-    out[i] = s;
-    const filt = (s + prev) * 0.5 * damping;
-    prev = s;
-    line[wp] = filt;
-    wp = (wp + 1) % L;
+    const rp=wp-delay, r0=Math.floor(rp), fr=rp-r0;
+    const a=line[((r0%L)+L)%L], b=line[(((r0+1)%L)+L)%L];
+    const s=a+(b-a)*fr;
+    out[i]=s;
+    const f=(s+prev)*0.5*damping; prev=s; line[wp]=f; wp=(wp+1)%L;
   }
+  const fade=Math.min(3000,(n/8)|0);
+  for(let i=0;i<fade;i++) out[n-1-i]*=i/fade;
 
-  // 끝을 부드럽게 페이드아웃해 클릭음 방지
-  const fade = Math.min(2000, (n/8)|0);
-  for(let i=0;i<fade;i++) out[n-1-i] *= i/fade;
+  // 통울림
+  __filt(out,__bq('peaking',100,1.2,5,sr));
+  __filt(out,__bq('peaking',204,1.6,4,sr));
+  __filt(out,__bq('peaking',430,1.4,3,sr));
+  __filt(out,__bq('lowpass',4800,0.7,0,sr));
+  __filt(out,__bq('highpass',75,0.7,0,sr));
 
-  // 피크 정규화 + 고음일수록 빨리 사라지는 만큼 보상해 체감 음량을 맞춘다
-  let peak=0;
-  for(let i=0;i<n;i++){ const a=Math.abs(out[i]); if(a>peak) peak=a; }
-  const lift = 1 + Math.max(0, Math.log2(freq/100)) * 0.5;
-  if(peak>0){ const k=Math.min(1.6, 0.96/peak*lift); for(let i=0;i<n;i++) out[i]*=k; }
+  // 스피커 대역(300Hz 이상) 에너지를 실측해 정규화 → 음역 전체 음량 통일
+  const probe=Float32Array.from(out);
+  __filt(probe,__bq('highpass',300,0.7,0,sr));
+  __filt(probe,__bq('highpass',300,0.7,0,sr));
+  let e=0; for(let i=0;i<probe.length;i++) e+=probe[i]*probe[i];
+  const level=Math.sqrt(e/probe.length);
+  const g=Math.min(3.5, 0.05/Math.max(level,1e-6));
+  let pk=0; for(let i=0;i<n;i++){ const v=Math.abs(out[i]*g); if(v>pk) pk=v; }
+  const k=g*Math.min(1, 0.85/Math.max(pk,1e-6));
+  for(let i=0;i<n;i++) out[i]*=k;
 
-  __pluckCache.set(key, buf);
+  __gtrCache.set(key,buf);
   return buf;
 }
-
-function pluckString(midi, dur=2.6, vol=0.9){
-  const ctx = getCtx();
-  const t = ctx.currentTime + 0.005;
-  const freq = midiToFreq(midi);
-
-  const src = ctx.createBufferSource();
-  src.buffer = makePluckBuffer(ctx, freq, dur);
-
-  // 통울림: 저역을 살짝 부풀리고 초고역을 깎아 나무 상자 느낌을 준다
-  const body = ctx.createBiquadFilter();
-  body.type='peaking'; body.frequency.value=Math.max(90,freq*1.4); body.Q.value=0.9; body.gain.value=2.5;
-  const tone = ctx.createBiquadFilter();
-  tone.type='lowpass'; tone.frequency.value=4200; tone.Q.value=0.6;
-
-  const g = ctx.createGain();
-  g.gain.setValueAtTime(vol, t);
-
-  src.connect(body).connect(tone).connect(g).connect(getMaster());
-  src.start(t);
-  src.stop(t+dur+0.05);
-
-  // 기음 보강: 튜닝은 기음을 귀로 맞추는 작업이라 이 성분이 뚜렷해야 한다.
-  // 현 소리만으로는 배음이 강해 기음이 묻힐 수 있다.
-  const fo = ctx.createOscillator(), fg = ctx.createGain();
-  fo.type='sine'; fo.frequency.value=freq;
-  fg.gain.setValueAtTime(0.0001, t);
-  fg.gain.exponentialRampToValueAtTime(vol*0.42, t+0.02);
-  fg.gain.exponentialRampToValueAtTime(0.0001, t+dur*0.85);
-  fo.connect(fg).connect(getMaster());
-  fo.start(t); fo.stop(t+dur);
+function guitarPluck(midi, dur=2.4, vol=0.62){
+  const ctx=getCtx(), t=ctx.currentTime+0.005;
+  const src=ctx.createBufferSource();
+  src.buffer=makeGuitarBuffer(ctx, midiToFreq(midi), dur);
+  const g=ctx.createGain(); g.gain.value=vol;
+  src.connect(g).connect(getMaster());
+  sendTo(g, 0.24);
+  src.start(t); src.stop(t+dur+0.05);
 }
+function referenceTone(midi, dur=2.6){ guitarPluck(midi, dur, 0.62); }
 
-/* ---- 피아노 (가산합성 + 비조화성) ----
-   피아노는 현의 강성 때문에 배음이 정수배보다 조금씩 높다(비조화성).
-   이 미세한 어긋남과 '고음이 먼저 사라지는' 감쇠가 피아노다운 소리를 만든다. */
-function pianoNote(midi, when, dur, vol=0.16){
-  const ctx = getCtx();
-  const t = (when!=null ? when : ctx.currentTime) + 0.004;
-  const f0 = midiToFreq(midi);
-  const B  = 0.0004;                 // 비조화 계수
-  const nyq= ctx.sampleRate/2.2;
+/* ---- 어쿠스틱 피아노 ----
+   실제 피아노는 한 음에 현이 2~3개이고 서로 미세하게 어긋나 있다.
+   그 맥놀이가 '두껍고 살아있는' 소리를 만든다. 여기에
+   현 강성에 의한 비조화성과, 고차 배음이 먼저 사라지는 감쇠를 더한다. */
+function pianoNote(midi, when, dur, vol=0.19){
+  const ctx=getCtx();
+  const t=(when!=null?when:ctx.currentTime)+0.004;
+  const f0=midiToFreq(midi);
+  const B=0.0004;
+  const nyq=ctx.sampleRate/2.2;
 
-  const bus = ctx.createGain();
-  bus.gain.value = vol;
+  const bus=ctx.createGain(); bus.gain.value=vol;
+  const tone=ctx.createBiquadFilter();
+  tone.type='lowpass';
+  tone.frequency.setValueAtTime(Math.min(7000, f0*16), t);
+  tone.frequency.exponentialRampToValueAtTime(Math.max(700, f0*5), t+0.7); // 밝기가 가라앉는다
+  tone.Q.value=0.5;
+  tone.connect(bus);
   bus.connect(getMaster());
+  sendTo(bus, 0.3);
 
-  for(let n=1;n<=9;n++){
-    const fn = f0*n*Math.sqrt(1+B*n*n);
-    if(fn > nyq) break;
-    const amp = 1/Math.pow(n,1.32);              // 배음이 올라갈수록 약해진다
-    const dec = Math.max(0.09, dur/(1+0.62*(n-1))); // 고차 배음이 먼저 사라진다
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type='sine';
-    o.frequency.value = fn;
-    // 3번째 이상 배음은 아주 살짝 디튠해 자연스러운 울렁임을 만든다
-    if(n>2) o.detune.value = (Math.random()*2-1)*2.5;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(amp, t+0.005);   // 빠른 타건 어택
-    g.gain.exponentialRampToValueAtTime(0.0001, t+dec);
-    o.connect(g).connect(bus);
-    o.start(t);
-    o.stop(t+dec+0.05);
-  }
+  // 현 2개를 미세하게 어긋나게 (맥놀이)
+  [-1, 1].forEach(side=>{
+    const det=side*(1.2 + Math.random()*1.4);   // ±1.2~2.6센트
+    for(let n=1;n<=14;n++){
+      const fn=f0*n*Math.sqrt(1+B*n*n);
+      if(fn>nyq) break;
+      const amp=(1/Math.pow(n,1.18))*(n%2===0?0.82:1)*0.5;  // 홀수 배음이 조금 강하다
+      if(amp<0.004) continue;
+      const dec=Math.max(0.12, dur/(1+0.5*(n-1)));
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type='sine'; o.frequency.value=fn; o.detune.value=det;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(amp,t+0.006);
+      g.gain.exponentialRampToValueAtTime(amp*0.30,t+Math.min(dec*0.32,0.35));
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dec);
+      o.connect(g).connect(tone);
+      o.start(t); o.stop(t+dec+0.06);
+    }
+  });
 
-  // 해머 타건음: 아주 짧은 고역 노이즈가 있어야 '눌렀다'는 느낌이 산다
-  const nb = ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.02), ctx.sampleRate);
-  const nd = nb.getChannelData(0);
-  for(let i=0;i<nd.length;i++) nd[i]=(Math.random()*2-1)*(1-i/nd.length);
-  const ns = ctx.createBufferSource(); ns.buffer=nb;
-  const nf = ctx.createBiquadFilter(); nf.type='bandpass';
-  nf.frequency.value=Math.min(5200, f0*7); nf.Q.value=0.8;
-  const ng = ctx.createGain();
-  ng.gain.setValueAtTime(0.16, t);
-  ng.gain.exponentialRampToValueAtTime(0.0001, t+0.045);
-  ns.connect(nf).connect(ng).connect(bus);
+  // 해머 타건음
+  const nb=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.03),ctx.sampleRate);
+  const nd=nb.getChannelData(0);
+  for(let i=0;i<nd.length;i++) nd[i]=(Math.random()*2-1)*Math.pow(1-i/nd.length,2.5);
+  const ns=ctx.createBufferSource(); ns.buffer=nb;
+  const nf=ctx.createBiquadFilter(); nf.type='bandpass';
+  nf.frequency.value=Math.min(4200,f0*6); nf.Q.value=0.9;
+  const ng=ctx.createGain();
+  ng.gain.setValueAtTime(0.13,t);
+  ng.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+  ns.connect(nf).connect(ng).connect(tone);
   ns.start(t); ns.stop(t+0.06);
 }
-
-function pianoChord(midis, when, dur, vol=0.15){
-  // 아주 미세한 시간차(스트럼)를 주면 동시에 찍는 것보다 자연스럽다
-  midis.forEach((m,i)=> pianoNote(m, (when||getCtx().currentTime)+i*0.008, dur, vol));
+function pianoChord(midis, when, dur, vol=0.18){
+  midis.forEach((m,i)=> pianoNote(m,(when||getCtx().currentTime)+i*0.010, dur, vol));
 }
 
 /* ===================== 탭 전환 ===================== */
-const tabTitles = {metronome:'메트로놈', tuner:'튜너', scales:'스케일', ear:'청음 트레이너', rhythm:'리듬 트레이너', jam:'잼 세션'};
+const tabTitles = {metronome:'메트로놈', tuner:'튜너', scales:'스케일', trainer:'트레이너', jam:'잼 세션'};
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -1098,10 +1265,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   let scheduledBeats = [];
 
   const bpmNum = document.getElementById('bpmNum');
-  const bpmSlider = document.getElementById('bpmSlider');
-  const pulseRing = document.getElementById('pulseRing');
   const beatDotsEl = document.getElementById('beatDots');
   const metroStart = document.getElementById('metroStart');
+  const orbLabel   = document.getElementById('orbLabel');
 
   function renderDots(){
     beatDotsEl.innerHTML = '';
@@ -1114,10 +1280,31 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   renderDots();
 
-  function updateBpmUI(){ bpmNum.textContent = bpm; bpmSlider.value = bpm; }
-  bpmSlider.addEventListener('input', ()=>{ bpm = parseInt(bpmSlider.value); updateBpmUI(); });
-  document.getElementById('bpmMinus').addEventListener('click', ()=>{ bpm = Math.max(30,bpm-1); updateBpmUI(); });
-  document.getElementById('bpmPlus').addEventListener('click', ()=>{ bpm = Math.min(260,bpm+1); updateBpmUI(); });
+  function updateBpmUI(){ bpmNum.textContent = bpm; }
+  function setBpm(v){ bpm = Math.max(30, Math.min(260, v)); updateBpmUI(); }
+
+  // 짧게 누르면 1, 길게 누르고 있으면 10씩 연속 변화
+  function bindStep(el, dir){
+    let holdTimer=null, repTimer=null, didHold=false;
+    const startHold = ()=>{
+      didHold=false;
+      holdTimer=setTimeout(()=>{
+        didHold=true;
+        setBpm(bpm + dir*10);
+        repTimer=setInterval(()=>setBpm(bpm + dir*10), 150);
+      }, 450);
+    };
+    const endHold = ()=>{
+      clearTimeout(holdTimer); clearInterval(repTimer);
+      holdTimer=repTimer=null;
+    };
+    el.addEventListener('pointerdown', e=>{ e.preventDefault(); startHold(); });
+    el.addEventListener('pointerup', ()=>{ if(!didHold) setBpm(bpm + dir); endHold(); });
+    el.addEventListener('pointerleave', endHold);
+    el.addEventListener('pointercancel', endHold);
+  }
+  bindStep(document.getElementById('bpmMinus'), -1);
+  bindStep(document.getElementById('bpmPlus'),  +1);
 
   let tapTimes = [];
   document.getElementById('tapTempoBtn').addEventListener('click', ()=>{
@@ -1128,8 +1315,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       let intervals=[];
       for(let i=1;i<tapTimes.length;i++) intervals.push(tapTimes[i]-tapTimes[i-1]);
       const avg = intervals.reduce((a,b)=>a+b,0)/intervals.length;
-      bpm = Math.round(Math.min(260,Math.max(30,60000/avg)));
-      updateBpmUI();
+      setBpm(Math.round(60000/avg));
     }
   });
 
@@ -1181,8 +1367,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     while(scheduledBeats.length && scheduledBeats[0].time <= now){
       const b = scheduledBeats.shift();
       if(b.isBeatStart){
-        pulseRing.classList.add('flash');
-        setTimeout(()=>pulseRing.classList.remove('flash'), 90);
+        metroStart.classList.add('flash');
+        setTimeout(()=>metroStart.classList.remove('flash'), 95);
         const dots = beatDotsEl.children;
         Array.from(dots).forEach(d=>d.classList.remove('on','accent-on'));
         if(dots[b.beatIndex]) dots[b.beatIndex].classList.add(b.isAccent?'accent-on':'on');
@@ -1200,15 +1386,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       nextNoteTime = getCtx().currentTime + 0.05;
       scheduler();
       visualLoop();
-      metroStart.textContent = '정지';
-      metroStart.classList.add('danger');
-      pulseRing.textContent = '재생';
+      orbLabel.textContent = '정지';
+      metroStart.classList.add('running');
     } else {
       isPlaying = false;
       clearTimeout(timerID);
-      metroStart.textContent = '시작';
-      metroStart.classList.remove('danger');
-      pulseRing.textContent = '대기';
+      orbLabel.textContent = '시작';
+      metroStart.classList.remove('running','flash');
       Array.from(beatDotsEl.children).forEach(d=>d.classList.remove('on','accent-on'));
     }
   });
@@ -1379,7 +1563,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       b.className='btn string-btn';
       b.textContent=midiToName(midi);
       b.dataset.midi=midi;
-      b.addEventListener('click', ()=> pluckString(midi, 3.0, 0.95));
+      b.addEventListener('click', ()=> referenceTone(midi, 2.6));
       stringBtns.appendChild(b);
     });
   }
@@ -1510,74 +1694,133 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     ukulele:{strings:[67,60,64,69]},
     mandolin:{strings:[55,62,69,76]},
   };
-  const FRETS = 15;
+  // 루트로부터의 반음 거리를 도수 표기로
+  const DEGREE = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
 
-  const scaleKey = document.getElementById('scaleKey');
-  const scaleType = document.getElementById('scaleType');
-  const scaleTuning = document.getElementById('scaleTuning');
-  const fretboard = document.getElementById('fretboard');
+  const scaleKey   = document.getElementById('scaleKey');
+  const scaleType  = document.getElementById('scaleType');
+  const scaleTuning= document.getElementById('scaleTuning');
+  const fretboard  = document.getElementById('fretboard');
+  const fretScroll = document.getElementById('fretScroll');
+  const fretZoom   = document.getElementById('fretZoom');
   const scaleNotesList = document.getElementById('scaleNotesList');
 
+  // 맞춤: 화면 폭에 전부 담는다 / 확대: 고정 크기로 키우고 가로 스크롤
+  // 맞춤: 전체를 화면 안에 / 확대: 보드 자체를 키우고 좌우로 밀어 본다
+  const ZOOMS = [
+    {key:'fit',  label:'맞춤', visible:null},  // 들어가는 만큼 전부
+    {key:'zoom', label:'확대', visible:8},     // 화면에 8칸만 채우고 나머지는 스크롤
+  ];
+  let zoom = 'fit';
+
   for(let i=0;i<12;i++){
-    const opt = document.createElement('option');
-    opt.value = i; opt.textContent = pcName(i);
-    scaleKey.appendChild(opt);
+    const o=document.createElement('option'); o.value=i; o.textContent=pcName(i); scaleKey.appendChild(o);
   }
-  scaleKey.value = 0;
-  Object.entries(SCALE_TYPES).forEach(([key,val])=>{
-    const opt = document.createElement('option');
-    opt.value = key; opt.textContent = val.label;
-    scaleType.appendChild(opt);
+  scaleKey.value=0;
+  Object.entries(SCALE_TYPES).forEach(([k,v])=>{
+    const o=document.createElement('option'); o.value=k; o.textContent=v.label; scaleType.appendChild(o);
   });
+  ZOOMS.forEach(z=>{
+    const b=document.createElement('button');
+    b.className='pill'+(z.key===zoom?' active':'');
+    b.textContent=z.label; b.dataset.zoom=z.key;
+    b.addEventListener('click', ()=>{
+      zoom=z.key;
+      fretZoom.querySelectorAll('.pill').forEach(x=>x.classList.toggle('active', x.dataset.zoom===zoom));
+      render();
+    });
+    fretZoom.appendChild(b);
+  });
+
+  // 맞춤 모드: 읽을 수 있는 최소 칸 크기(26px)를 지키면서 들어갈 만큼만 프렛을 보인다
+  function layout(){
+    const z   = ZOOMS.find(x=>x.key===zoom);
+    const gap = 3;
+    // clientWidth에는 좌우 패딩이 포함되고, .fretboard 자체도 1px씩 패딩이 있다
+    const w   = (fretScroll.clientWidth || 330) - 6;
+
+    if(z.visible){
+      // 확대: 화면 폭을 z.visible칸이 꽉 채우도록 칸을 키운다.
+      // 프렛은 15까지 모두 그리므로 좌우로 밀어서 볼 수 있다 = 보드가 확대된 것.
+      const cell = Math.floor((w - gap*(z.visible-1)) / z.visible);
+      return {cell, frets:15};
+    }
+    // 맞춤: 읽을 수 있는 최소 크기(26px)를 지키는 선에서 최대한 많은 프렛을
+    let cols = Math.floor((w + gap) / (26 + gap));
+    cols = Math.max(6, Math.min(17, cols));
+    const cell = Math.floor((w - gap*(cols-1)) / cols);
+    return {cell, frets: cols - 2};       // cols = 라벨 1 + 프렛(frets+1)
+  }
 
   function render(){
     const rootPc = parseInt(scaleKey.value);
-    const type = SCALE_TYPES[scaleType.value];
+    const type   = SCALE_TYPES[scaleType.value];
     const tuning = TUNINGS[scaleTuning.value];
-    const scaleSet = new Set(type.intervals.map(i=>(rootPc+i)%12));
+    const lay    = layout();
+    const FRETS  = lay.frets;
+    const size   = lay.cell;
+    const showText = size >= 19;
 
-    fretboard.innerHTML = '';
-    const fretNumRow = document.createElement('div');
-    fretNumRow.className = 'fret-row';
-    const corner = document.createElement('div'); corner.className='fret-num'; corner.textContent=''; fretNumRow.appendChild(corner);
+    const scaleSet = new Map();
+    type.intervals.forEach(iv=> scaleSet.set((rootPc+iv)%12, iv));
+
+    fretboard.style.setProperty('--fc', size+'px');
+    fretboard.classList.toggle('compact', !showText);
+    fretboard.classList.toggle('zoomed', zoom==='zoom');
+    fretScroll.classList.toggle('fit', zoom==='fit');
+
+    fretboard.innerHTML='';
+    const head=document.createElement('div');
+    head.className='fret-row';
+    const corner=document.createElement('div'); corner.className='fret-num'; head.appendChild(corner);
     for(let f=0; f<=FRETS; f++){
-      const fn = document.createElement('div'); fn.className='fret-num'; fn.textContent = f; fretNumRow.appendChild(fn);
+      const n=document.createElement('div');
+      n.className='fret-num'+([3,5,7,9,12,15].includes(f)?' mark':'');
+      n.textContent=f;
+      head.appendChild(n);
     }
-    fretboard.appendChild(fretNumRow);
+    fretboard.appendChild(head);
 
     for(let s=tuning.strings.length-1; s>=0; s--){
-      const rowEl = document.createElement('div');
-      rowEl.className = 'fret-row';
-      const label = document.createElement('div');
-      label.className = 'fret-num';
-      label.textContent = pcName(tuning.strings[s]%12);
-      rowEl.appendChild(label);
+      const row=document.createElement('div'); row.className='fret-row';
+      const lab=document.createElement('div'); lab.className='fret-num';
+      lab.textContent=pcName(tuning.strings[s]%12);
+      row.appendChild(lab);
       for(let f=0; f<=FRETS; f++){
-        const midi = tuning.strings[s]+f;
-        const pc = ((midi%12)+12)%12;
-        const cell = document.createElement('div');
-        cell.className = 'fret-cell';
+        const midi=tuning.strings[s]+f;
+        const pc=((midi%12)+12)%12;
+        const c=document.createElement('div');
+        c.className='fret-cell';
         if(scaleSet.has(pc)){
-          cell.classList.add(pc===rootPc ? 'root' : 'scale');
-          cell.textContent = pcName(pc);
+          const isRoot = pc===rootPc;
+          c.classList.add(isRoot?'root':'scale');
+          if(showText) c.textContent = pcName(pc);
+          c.title = pcName(pc)+' · '+DEGREE[scaleSet.get(pc)]+'도';
         } else {
-          cell.classList.add('note');
+          c.classList.add('note');
         }
-        rowEl.appendChild(cell);
+        row.appendChild(c);
       }
-      fretboard.appendChild(rowEl);
+      fretboard.appendChild(row);
     }
 
-    scaleNotesList.innerHTML = '';
+    // 구성음: 음이름 + 루트 기준 도수
+    scaleNotesList.innerHTML='';
     type.intervals.forEach(iv=>{
-      const pc = (rootPc+iv)%12;
-      const tag = document.createElement('span');
-      tag.className = 'pill' + (pc===rootPc?' active':'');
-      tag.textContent = pcName(pc);
-      scaleNotesList.appendChild(tag);
+      const pc=(rootPc+iv)%12;
+      const t=document.createElement('span');
+      t.className='note-chip'+(iv===0?' root':'');
+      t.innerHTML=`<span class="nm">${pcName(pc)}</span><span class="dg">${DEGREE[iv]}</span>`;
+      t.addEventListener('click', ()=> guitarPluck(52+rootPc+iv, 1.8, 0.55));
+      scaleNotesList.appendChild(t);
     });
   }
+
   [scaleKey, scaleType, scaleTuning].forEach(el=>el.addEventListener('change', render));
+  window.addEventListener('resize', ()=>{ if(zoom==='fit') render(); });
+  // 탭이 처음 열릴 때 컨테이너 폭이 잡히므로 다시 계산한다
+  document.querySelector('.tab-btn[data-tab="scales"]')
+    .addEventListener('click', ()=> setTimeout(render, 0));
   render();
 })();
 
@@ -1751,15 +1994,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     setTimeout(()=>earPlayBtn.classList.remove('playing'), 900);
 
     if(mode==='interval'){
-      playTone(midiToFreq(root), 0.5, 0, 'triangle', 0.2);
-      playTone(midiToFreq(root+answer.semis), 0.5, 0.6, 'triangle', 0.2);
+      playTone(midiToFreq(root), 0.5, 0, 'triangle', 0.61);
+      playTone(midiToFreq(root+answer.semis), 0.5, 0.6, 'triangle', 0.61);
     } else if(mode==='chord'){
       // 아르페지오 후 동시 울림 — 구성음이 잘 들리도록
-      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.36, i*0.17, 'triangle', 0.16));
+      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.36, i*0.17, 'triangle', 0.48));
       const after = answer.iv.length*0.17 + 0.12;
-      answer.iv.forEach(iv=> playTone(midiToFreq(root+iv), 1.1, after, 'sine', 0.11));
+      answer.iv.forEach(iv=> playTone(midiToFreq(root+iv), 1.1, after, 'sine', 0.33));
     } else {
-      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.3, i*0.23, 'triangle', 0.17));
+      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.3, i*0.23, 'triangle', 0.52));
     }
   }
   earPlayBtn.addEventListener('click', playCurrent);
@@ -1841,15 +2084,22 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function renderGrid(){
+    // 가로 한 줄 진행이 직관적이다. 잘리지 않도록 칸 크기를 폭에 맞춰 계산한다.
     beatGrid.innerHTML='';
     const row=document.createElement('div');
     row.className='grid-row';
+    const steps=pattern.length;
+    const w=beatGrid.clientWidth || 330;
+    const gap=3;
+    const size=Math.max(11, Math.min(30, Math.floor((w - gap*(steps-1))/steps)));
+    row.style.setProperty('--gc', size+'px');
+    row.style.gap=gap+'px';
     pattern.forEach((on,i)=>{
       const isBeat=i%4===0;
       const c=document.createElement('div');
       c.className='gcell'+(isBeat?' beat':'')+(on?' on':'');
       c.dataset.i=i;
-      c.textContent=isBeat?(i/4+1):'';
+      c.textContent = (isBeat && size>=17) ? (i/4+1) : '';
       c.addEventListener('click', ()=>{
         pattern[i]=pattern[i]?0:1;
         c.classList.toggle('on', !!pattern[i]);
@@ -1858,6 +2108,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
     beatGrid.appendChild(row);
   }
+  window.addEventListener('resize', ()=>{ if(pattern.length) renderGrid(); });
+  // 트레이너 탭 또는 '리듬' 하위 모드로 들어올 때 폭을 다시 잰다
+  const trainerTab=document.querySelector('.tab-btn[data-tab="trainer"]');
+  if(trainerTab) trainerTab.addEventListener('click', ()=> setTimeout(renderGrid,0));
 
   Object.entries(PRESETS).forEach(([k,v])=>{
     const b=document.createElement('button');
@@ -1901,21 +2155,21 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     o.type='sine';
     o.frequency.setValueAtTime(155,t);
     o.frequency.exponentialRampToValueAtTime(48,t+0.10);
-    g.gain.setValueAtTime(0.80,t);
+    g.gain.setValueAtTime(0.58,t);
     g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
-    o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+0.24);
+    o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.24);
   }
   function snare(ctx,t){
     const o=ctx.createOscillator(), g=ctx.createGain();
     o.type='triangle'; o.frequency.setValueAtTime(240,t);
-    g.gain.setValueAtTime(0.34,t);
+    g.gain.setValueAtTime(0.46,t);
     g.gain.exponentialRampToValueAtTime(0.0001,t+0.10);
-    o.connect(g).connect(ctx.destination); o.start(t); o.stop(t+0.12);
+    o.connect(g).connect(getMaster()); o.start(t); o.stop(t+0.12);
     const o2=ctx.createOscillator(), g2=ctx.createGain();
     o2.type='square'; o2.frequency.setValueAtTime(1750,t);
-    g2.gain.setValueAtTime(0.10,t);
+    g2.gain.setValueAtTime(0.14,t);
     g2.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
-    o2.connect(g2).connect(ctx.destination); o2.start(t); o2.stop(t+0.07);
+    o2.connect(g2).connect(getMaster()); o2.start(t); o2.stop(t+0.07);
   }
 
   /* ---------- 루프 스케줄러 ----------
@@ -2048,13 +2302,27 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     },
   };
 
+  // 반음 수를 고정하면 코드 성질(장/단/감)을 무시해 틀린 음이 나온다.
+  // 'R/3/5/6/8' 기호로 두고 실제 코드 구성음에서 꺼내 쓴다.
   const BASS_PATTERNS = {
-    sustain:[{s:0, d:16, deg:0}],
-    root5:  [{s:0, d:8, deg:0},{s:8, d:8, deg:7}],
-    drive:  [0,2,4,6,8,10,12,14].map(s=>({s, d:2, deg:0})),
-    walk:   [{s:0,d:4,deg:0},{s:4,d:4,deg:3},{s:8,d:4,deg:7},{s:12,d:4,deg:10}],
-    synco:  [{s:0,d:3,deg:0},{s:3,d:3,deg:0},{s:6,d:2,deg:7},{s:10,d:2,deg:0},{s:14,d:2,deg:7}],
+    sustain:[{s:0, d:16, t:'R'}],
+    root5:  [{s:0, d:8, t:'R'},{s:8, d:8, t:'5'}],
+    drive:  [0,2,4,6,8,10,12,14].map(s=>({s, d:2, t:'R'})),
+    walk:   [{s:0,d:4,t:'R'},{s:4,d:4,t:'3'},{s:8,d:4,t:'5'},{s:12,d:4,t:'6'}],
+    synco:  [{s:0,d:3,t:'R'},{s:3,d:3,t:'R'},{s:6,d:2,t:'5'},{s:10,d:2,t:'R'},{s:14,d:2,t:'8'}],
   };
+  // 코드의 실제 3도·5도를 쓴다. 감화음이면 5도가 6반음(감5도)이다.
+  function bassIv(t, c){
+    const iv = c.intervals;                 // [0, 3도, 5도]
+    switch(t){
+      case 'R': return 0;
+      case '3': return iv[1];
+      case '5': return iv[2];
+      case '6': return c.quality==='maj' ? 9 : 10;   // 장화음은 6도, 그 외는 ♭7 경과음
+      case '8': return 12;
+      default:  return 0;
+    }
+  }
   const CHORD_PATTERNS = {
     block:   [{s:0, d:15}],
     sustain: [{s:0, d:16}],
@@ -2235,27 +2503,35 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function kick(ctx, t){
     const o=ctx.createOscillator(), g=ctx.createGain();
     o.type='sine';
-    o.frequency.setValueAtTime(150,t);
-    o.frequency.exponentialRampToValueAtTime(48,t+0.11);
-    g.gain.setValueAtTime(0.85,t);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+0.24);
-    o.connect(g).connect(ctx.destination);
-    o.start(t); o.stop(t+0.26);
+    o.frequency.setValueAtTime(165,t);
+    o.frequency.exponentialRampToValueAtTime(44,t+0.09);   // 피치 엔벨로프
+    g.gain.setValueAtTime(0.60,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.30);
+    o.connect(g).connect(getMaster());
+    o.start(t); o.stop(t+0.32);
+    // 비터 클릭 — 작은 스피커에서 킥이 들리게 하는 성분
+    const c=ctx.createOscillator(), cg=ctx.createGain();
+    c.type='triangle'; c.frequency.setValueAtTime(1100,t);
+    cg.gain.setValueAtTime(0.10,t);
+    cg.gain.exponentialRampToValueAtTime(0.0001,t+0.022);
+    c.connect(cg).connect(getMaster());
+    c.start(t); c.stop(t+0.03);
   }
+
   function snare(ctx, t){
     const src=ctx.createBufferSource(); src.buffer=getNoise(ctx);
     const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1900; bp.Q.value=0.8;
     const g=ctx.createGain();
-    g.gain.setValueAtTime(0.42,t);
+    g.gain.setValueAtTime(0.50,t);
     g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
-    src.connect(bp).connect(g).connect(ctx.destination);
+    src.connect(bp).connect(g).connect(getMaster());
     src.start(t); src.stop(t+0.18);
     // 몸통
     const o=ctx.createOscillator(), og=ctx.createGain();
     o.type='triangle'; o.frequency.setValueAtTime(190,t);
-    og.gain.setValueAtTime(0.22,t);
+    og.gain.setValueAtTime(0.26,t);
     og.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
-    o.connect(og).connect(ctx.destination);
+    o.connect(og).connect(getMaster());
     o.start(t); o.stop(t+0.1);
   }
   function hat(ctx, t, open){
@@ -2263,30 +2539,50 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=8200;
     const g=ctx.createGain();
     const d = open?0.16:0.045;
-    g.gain.setValueAtTime(0.17,t);
+    g.gain.setValueAtTime(0.20,t);
     g.gain.exponentialRampToValueAtTime(0.0001,t+d);
-    src.connect(hp).connect(g).connect(ctx.destination);
+    src.connect(hp).connect(g).connect(getMaster());
     src.start(t); src.stop(t+d+0.02);
   }
   function bassNote(ctx, t, midi, dur){
+    // 톱니파를 필터로 깎으면 손가락으로 뜯은 베이스의 어택이 산다.
+    // 서브 사인을 아래에 깔아 두께를 준다.
+    const f=midiToFreq(midi);
+    const bus=ctx.createGain(); bus.gain.value=1;
+    bus.connect(getMaster());
+
+    const lp=ctx.createBiquadFilter();
+    lp.type='lowpass'; lp.Q.value=6;
+    lp.frequency.setValueAtTime(Math.min(2600,f*13),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(120,f*2.2),t+Math.min(0.28,dur));
+    lp.connect(bus);
+
     const o=ctx.createOscillator(), g=ctx.createGain();
-    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=900;
-    o.type='triangle'; o.frequency.value=midiToFreq(midi);
+    o.type='sawtooth'; o.frequency.value=f;
     g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(0.34,t+0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(dur,0.08));
-    o.connect(lp).connect(g).connect(ctx.destination);
+    g.gain.exponentialRampToValueAtTime(0.30,t+0.010);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(dur,0.09));
+    o.connect(g).connect(lp);
     o.start(t); o.stop(t+dur+0.06);
+
+    const sub=ctx.createOscillator(), sg=ctx.createGain();
+    sub.type='sine'; sub.frequency.value=f;
+    sg.gain.setValueAtTime(0.0001,t);
+    sg.gain.exponentialRampToValueAtTime(0.26,t+0.012);
+    sg.gain.exponentialRampToValueAtTime(0.0001,t+Math.max(dur,0.09));
+    sub.connect(sg).connect(bus);
+    sub.start(t); sub.stop(t+dur+0.06);
   }
+
   function chordVoice(ctx, t, midis, dur){
-    pianoChord(midis, t, dur, 0.15);
+    pianoChord(midis, t, dur, 0.18);
   }
 
   function previewChord(deg){
     const ctx=getCtx();
     const c=chordInfo(deg);
-    const base = 60 + c.semis;
-    pianoChord(c.intervals.map(iv=>base+iv), ctx.currentTime+0.01, 1.5, 0.17);
+    const base = 48 + c.pc;                // 조성 반영
+    pianoChord(c.intervals.map(iv=>base+iv), ctx.currentTime+0.01, 1.5, 0.20);
   }
 
   /* ---------- 스케줄러 ---------- */
@@ -2325,13 +2621,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const secPerStep = (60/parseInt(jamBpmSlider.value))/4;
     if(tracks.bass){
       BASS_PATTERNS[st.bass].forEach(p=>{
-        if(p.s===s) bassNote(ctx, when, 40 + c.semis + p.deg, p.d*secPerStep*0.9);
+        // c.pc는 조성이 반영된 실제 음이름. 36+pc = C2~B2 (베이스 음역)
+        if(p.s===s) bassNote(ctx, when, 36 + c.pc + bassIv(p.t, c), p.d*secPerStep*0.9);
       });
     }
     if(tracks.chord){
       CHORD_PATTERNS[st.chord].forEach(p=>{
         if(p.s===s){
-          const base = 60 + c.semis;
+          const base = 48 + c.pc;            // 조성이 반영된 음. C3~B3
           chordVoice(ctx, when, c.intervals.map(iv=>base+iv), p.d*secPerStep*0.92);
         }
       });
@@ -2362,7 +2659,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const bars=progTimeline.querySelectorAll('.prog-bar');
       bars.forEach((b,i)=> b.classList.toggle('now', i===m.barIdx));
       const cur=bars[m.barIdx];
-      if(cur) cur.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+      // scrollIntoView는 조상 요소까지 세로로 끌어올린다.
+      // 타임라인 컨테이너의 가로 스크롤만 직접 움직인다.
+      if(cur){
+        const view = progTimeline;
+        const left = cur.offsetLeft - (view.clientWidth - cur.offsetWidth)/2;
+        const max  = view.scrollWidth - view.clientWidth;
+        const want = Math.max(0, Math.min(max, left));
+        if(Math.abs(view.scrollLeft - want) > 2) view.scrollLeft = want;
+      }
     }
     requestAnimationFrame(visualLoop);
   }
@@ -2402,12 +2707,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const ctx=getCtx();
     const rootPc=parseInt(jamKey.value);
     droneNodes=[];
-    [40+rootPc, 52+rootPc].forEach((midi,i)=>{
+    [36+rootPc, 48+rootPc].forEach((midi,i)=>{
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.type='sine'; o.frequency.value=midiToFreq(midi);
       g.gain.setValueAtTime(0.0001,ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(i===0?0.14:0.07, ctx.currentTime+0.4);
-      o.connect(g).connect(ctx.destination);
+      o.connect(g).connect(getMaster());
       o.start();
       droneNodes.push(o);
     });
@@ -2418,6 +2723,23 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   /* ---------- 초기화 ---------- */
   jamPreset.value='pop';
   loadPreset();
+})();
+
+/* ===== 트레이너: 청음 / 리듬 전환 ===== */
+(function(){
+  const seg=document.getElementById('trainerSeg');
+  if(!seg) return;
+  seg.querySelectorAll('.seg-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      seg.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const m=b.dataset.mode;
+      document.querySelectorAll('.trainer-pane').forEach(p=>
+        p.classList.toggle('active', p.id==='pane-'+m));
+      // 리듬 그리드는 보이게 된 뒤에야 폭을 잴 수 있다
+      if(m==='rhythm') setTimeout(()=>window.dispatchEvent(new Event('resize')),0);
+    });
+  });
 })();
 
 /* ===== 스크롤 시 탭바 축소 (iOS 26 리퀴드 글라스 거동) ===== */
