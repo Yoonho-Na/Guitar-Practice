@@ -41,6 +41,8 @@
        채도를 낮게 유지하되(0.34) '지금 울리고 있다'는 신호로 읽히는 선. */
     --signal:#687c52;
     --signal-rgb:104,124,82;
+    --signal-press:#57683f;
+    --on-signal:#ffffff;
     --signal-display:#93ab76;      /* 어두운 디스플레이 창 위에서는 밝은 톤 */
     --signal-soft:rgba(104,124,82,.14);
 
@@ -71,6 +73,8 @@
       --line-soft:#312f2b;
       --signal:#97a982;
       --signal-rgb:151,169,130;
+      --signal-press:#7f9169;
+      --on-signal:#1e2417;   /* 다크의 세이지는 밝아서 어두운 글자가 읽힌다 */
       --signal-display:#a3b58c;
       --signal-soft:rgba(151,169,130,.17);
     }
@@ -136,12 +140,12 @@
   }
   .btn:active{ background:var(--key-press); border-bottom-width:1px; transform:translateY(1px); }
   .btn.primary{
-    background:var(--ink); border-color:var(--ink); color:var(--body);
+    background:var(--signal); border-color:var(--signal); color:var(--on-signal);
     letter-spacing:0.0818em; font-size:0.7812rem;
   }
-  .btn.primary:active{ background:var(--ink-2); border-color:var(--ink-2); }
+  .btn.primary:active{ background:var(--signal-press); border-color:var(--signal-press); }
   .btn.danger{
-    background:var(--signal); border-color:var(--signal); color:#fff;
+    background:var(--signal); border-color:var(--signal); color:var(--on-signal);
     letter-spacing:0.0818em; font-size:0.7812rem;
   }
   /* 주요 트랜스포트 버튼은 스타디움 형태 */
@@ -162,7 +166,7 @@
     transition:background .12s var(--ease-out), color .12s var(--ease-out), border-color .12s var(--ease-out), transform .1s var(--ease-out);
   }
   .pill:active{ transform:scale(.96); }
-  .pill.active{ background:var(--ink); border-color:var(--ink); color:var(--body); }
+  .pill.active{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
 
   /* ---------- Form ---------- */
   select{
@@ -280,7 +284,7 @@
     mask:radial-gradient(circle, transparent 0 44px, #000 44px);
     opacity:.6;
   }
-  .pulse-ring.flash{ background:var(--signal); color:#fff; border-color:var(--signal); }
+  .pulse-ring.flash{ background:var(--signal); color:var(--on-signal); border-color:var(--signal); }
 
   /* ---------- Tuner: 스트로보 디스크 ---------- */
   .tuner-note{
@@ -350,7 +354,7 @@
 
   .string-btns{display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-top:12px;}
   .string-btn{padding:11px 2px; font-size:0.6875rem; text-align:center; border-radius:var(--r-pill);}
-  .string-btn.match{ background:var(--signal); border-color:var(--signal); color:#fff; }
+  .string-btn.match{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
 
   /* ---------- Fretboard: circular note markers ---------- */
   .fretboard-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -2px; padding:0 2px;}
@@ -367,7 +371,7 @@
   }
   .fret-cell.note{ border-color:var(--line-soft); }
   .fret-cell.scale{ background:var(--ink-2); border-color:var(--ink-2); color:var(--body); }
-  .fret-cell.root{ background:var(--signal); border-color:var(--signal); color:#fff; font-weight:700; }
+  .fret-cell.root{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); font-weight:700; }
   .fret-num{
     width:32px; text-align:center; font-size:0.5312rem; letter-spacing:.02em;
     color:var(--ink-3); flex-shrink:0; font-weight:500;
@@ -391,8 +395,8 @@
   .choice-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:6px;}
   .choice-grid.cols3{grid-template-columns:repeat(3,1fr);}
   .choice-btn{padding:14px 4px; font-size:0.6875rem; border-radius:var(--r-pill);}
-  .choice-btn.correct{ background:var(--ink); border-color:var(--ink); color:var(--body); }
-  .choice-btn.wrong{ background:var(--signal); border-color:var(--signal); color:#fff; }
+  .choice-btn.correct{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
+  .choice-btn.wrong{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
   .choice-btn.correct[disabled], .choice-btn.wrong[disabled]{opacity:1;}
   .feedback-msg{
     text-align:center; font-size:0.75rem; font-weight:500; min-height:17px;
@@ -410,7 +414,7 @@
     margin-bottom:12px;
     transition:background .12s var(--ease-out), color .12s var(--ease-out), border-color .12s var(--ease-out), transform .1s var(--ease-out);
   }
-  .tap-pad.live{ background:var(--signal); color:#fff; border-color:var(--signal); }
+  .tap-pad.live{ background:var(--signal); color:var(--on-signal); border-color:var(--signal); }
   .tap-pad:active{ background:var(--key-press); }
 
   .rhythm-track{display:flex; gap:5px; overflow-x:auto; padding:9px 1px; margin-bottom:6px;}
@@ -458,8 +462,8 @@
   }
   .prog-bar .stp:active{background:var(--key-press);}
   .prog-bar.now{ background:var(--signal); border-color:var(--signal); }
-  .prog-bar.now .nm, .prog-bar.now .rn, .prog-bar.now .bar-no, .prog-bar.now .bv{ color:#fff; }
-  .prog-bar.now .stp{ background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.36); color:#fff; }
+  .prog-bar.now .nm, .prog-bar.now .rn, .prog-bar.now .bar-no, .prog-bar.now .bv{ color:var(--on-signal); }
+  .prog-bar.now .stp{ background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.36); color:var(--on-signal); }
 
   .chord-palette{display:grid; grid-template-columns:repeat(4,1fr); gap:5px;}
   .chord-cell{
@@ -488,7 +492,7 @@
     background:var(--key); border:1px solid var(--line); border-radius:var(--r-pill);
     padding:11px 16px; font-size:0.875rem; font-weight:400;
   }
-  .chord-tag.now{ background:var(--signal); border-color:var(--signal); color:#fff; }
+  .chord-tag.now{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
   .progression-row{display:flex; gap:6px; overflow-x:auto; padding:4px 1px 8px;}
 
   .hint{
@@ -536,7 +540,7 @@
   .play-orb.playing, .play-orb.on{
     background:var(--signal); border-color:var(--signal);
   }
-  .play-orb.playing svg, .play-orb.on svg{ fill:#fff; }
+  .play-orb.playing svg, .play-orb.on svg{ fill:var(--on-signal); }
   .play-orb.sm{ width:56px; height:56px; flex-shrink:0; }
   .play-orb.sm svg{ width:22px; height:22px; }
 
@@ -565,11 +569,11 @@
   .choice-row:active{ background:var(--key-press); border-bottom-width:1px; transform:translateY(1px); }
   .choice-row .ko{ font-size:0.8125rem; font-weight:500; color:var(--ink); letter-spacing:-0.0182em; }
   .choice-row .en{ font-size:0.5938rem; color:var(--ink-3); font-weight:400; letter-spacing:.02em; }
-  .choice-row.correct{ background:var(--ink); border-color:var(--ink); }
-  .choice-row.correct .ko{ color:var(--body); }
+  .choice-row.correct{ background:var(--signal); border-color:var(--signal); }
+  .choice-row.correct .ko{ color:var(--on-signal); }
   .choice-row.correct .en{ color:rgba(255,255,255,.55); }
   .choice-row.wrong{ background:var(--signal); border-color:var(--signal); }
-  .choice-row.wrong .ko{ color:#fff; }
+  .choice-row.wrong .ko{ color:var(--on-signal); }
   .choice-row.wrong .en{ color:rgba(255,255,255,.6); }
   .choice-row[disabled]{ opacity:1; }
   .choice-row:disabled:not(.correct):not(.wrong){ opacity:.45; }
@@ -597,7 +601,7 @@
   }
   .gcell.beat{ width:calc(var(--gc) * 1.32); height:calc(var(--gc) * 1.32); font-size:0.625rem; border-color:var(--ink-3); }
   .gcell.on{ background:var(--ink-2); border-color:var(--ink-2); color:var(--body); }
-  .gcell.beat.on{ background:var(--ink); border-color:var(--ink); }
+  .gcell.beat.on{ background:var(--signal); border-color:var(--signal); }
   .gcell:active{ transform:scale(.88); }
   /* §11 재생 커서는 transform만 — 컴포지터에서 처리된다 */
   .gcell.cursor{ transform:scale(1.32); }
@@ -605,7 +609,7 @@
     content:''; position:absolute; inset:-3px; border-radius:50%;
     border:1.5px solid var(--signal);
   }
-  .gcell.on.cursor{ background:var(--signal); border-color:var(--signal); color:#fff; }
+  .gcell.on.cursor{ background:var(--signal); border-color:var(--signal); color:var(--on-signal); }
 
   /* ---------- 리듬: 트랜스포트 ---------- */
   .transport{ display:flex; align-items:center; gap:14px; margin-bottom:4px; }
@@ -664,8 +668,8 @@
   .note-chip .nm{ font-size:clamp(0.8125rem, 1.6vw, 1rem); font-weight:500; letter-spacing:.01em; }
   .note-chip .dg{ font-size:0.625rem; color:var(--ink-3); font-weight:500; letter-spacing:.03em; font-variant-numeric:tabular-nums; }
   .note-chip.root{ background:var(--signal); border-color:var(--signal); }
-  .note-chip.root .nm{ color:#fff; }
-  .note-chip.root .dg{ color:rgba(255,255,255,.72); }
+  .note-chip.root .nm{ color:var(--on-signal); }
+  .note-chip.root .dg{ color:var(--on-signal); opacity:.72; }
 
   /* ---------- 메트로놈: 좌 숫자·키 / 우 발광 오브 ---------- */
   .metro-main{ display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:center; }
@@ -712,7 +716,7 @@
     animation:orbBody .5s cubic-bezier(.16,.7,.3,1) forwards;
   }
   @keyframes orbText{
-    0%{ color:#fff; } 100%{ color:var(--ink-3); }
+    0%{ color:var(--on-signal); } 100%{ color:var(--ink-3); }
   }
   .metro-orb.flash .orb-label{ animation:orbText .5s cubic-bezier(.16,.7,.3,1) forwards; }
 
@@ -747,7 +751,7 @@
     transition:background .14s var(--ease-out), color .14s var(--ease-out);
   }
   .seg-btn:active{ transform:scale(.97); }
-  .seg-btn.active{ background:var(--ink); color:var(--body); }
+  .seg-btn.active{ background:var(--signal); color:var(--on-signal); }
   .trainer-pane{ display:none; }
   .trainer-pane.active{ display:block; animation:in .24s var(--ease-out); }
 
@@ -1276,7 +1280,7 @@ function guitarPluck(midi, dur=2.4, vol=0.62){
   sendTo(g, 0.24);
   src.start(t); src.stop(t+dur+0.05);
 }
-function referenceTone(midi, dur=2.6){ guitarPluck(midi, dur, 0.62); }
+function referenceTone(midi, dur=2.6){ guitarPluck(midi, dur, 0.78); }
 
 /* ---- 어쿠스틱 피아노 ----
    실제 피아노는 한 음에 현이 2~3개이고 서로 미세하게 어긋나 있다.
@@ -1332,7 +1336,7 @@ function pianoNote(midi, when, dur, vol=0.19){
   ns.connect(nf).connect(ng).connect(tone);
   ns.start(t); ns.stop(t+0.06);
 }
-function pianoChord(midis, when, dur, vol=0.18){
+function pianoChord(midis, when, dur, vol=0.28){
   midis.forEach((m,i)=> pianoNote(m,(when||getCtx().currentTime)+i*0.010, dur, vol));
 }
 
@@ -2129,7 +2133,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
     const pool = bank();
     const answer = pool[Math.floor(Math.random()*pool.length)];
-    const root = (mode==='scale' ? 55 : mode==='chord' ? 52 : 55) + Math.floor(Math.random()*7);
+    // 휴대폰 스피커는 300Hz 아래를 12~21dB나 깎는다.
+    // 예전 음역(165~277Hz)은 측정상 충분해도 실제로는 작게 들렸다.
+    const root = (mode==='scale' ? 60 : mode==='chord' ? 57 : 60) + Math.floor(Math.random()*7);
     current = {answer, root};
 
     // 보기: 정답 + 오답 3개 (풀이 작으면 있는 만큼)
@@ -2182,15 +2188,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     setTimeout(()=>earPlayBtn.classList.remove('playing'), 900);
 
     if(mode==='interval'){
-      playTone(midiToFreq(root), 0.5, 0, 'triangle', 0.61);
-      playTone(midiToFreq(root+answer.semis), 0.5, 0.6, 'triangle', 0.61);
+      playTone(midiToFreq(root), 0.5, 0, 'triangle', 0.82);
+      playTone(midiToFreq(root+answer.semis), 0.5, 0.6, 'triangle', 0.82);
     } else if(mode==='chord'){
       // 아르페지오 후 동시 울림 — 구성음이 잘 들리도록
-      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.36, i*0.17, 'triangle', 0.48));
+      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.36, i*0.17, 'triangle', 0.53));
       const after = answer.iv.length*0.17 + 0.12;
-      answer.iv.forEach(iv=> playTone(midiToFreq(root+iv), 1.1, after, 'sine', 0.33));
+      answer.iv.forEach(iv=> playTone(midiToFreq(root+iv), 1.1, after, 'sine', 0.36));
     } else {
-      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.3, i*0.23, 'triangle', 0.52));
+      answer.iv.forEach((iv,i)=> playTone(midiToFreq(root+iv), 0.3, i*0.23, 'triangle', 0.69));
     }
   }
   earPlayBtn.addEventListener('click', playCurrent);
@@ -2792,14 +2798,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function chordVoice(ctx, t, midis, dur){
-    pianoChord(midis, t, dur, 0.18);
+    pianoChord(midis, t, dur, 0.28);
   }
 
   function previewChord(deg){
     const ctx=getCtx();
     const c=chordInfo(deg);
     const base = 48 + c.pc;                // 조성 반영
-    pianoChord(c.intervals.map(iv=>base+iv), ctx.currentTime+0.01, 1.5, 0.20);
+    pianoChord(c.intervals.map(iv=>base+iv), ctx.currentTime+0.01, 1.5, 0.30);
   }
 
   /* ---------- 스케줄러 ---------- */
