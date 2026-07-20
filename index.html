@@ -37,9 +37,12 @@
     --line-soft:#cbc9c2;
 
     /* 유일한 유채색 — 차분한 슬레이트. 작동 중일 때만. */
-    --signal:#c1603d;
-    --signal-display:#e8794d;
-    --signal-soft:rgba(193,96,61,.13);
+    /* 유일한 유채색 — 브라운 주방기기 계열의 세이지.
+       채도를 낮게 유지하되(0.34) '지금 울리고 있다'는 신호로 읽히는 선. */
+    --signal:#687c52;
+    --signal-rgb:104,124,82;
+    --signal-display:#93ab76;      /* 어두운 디스플레이 창 위에서는 밝은 톤 */
+    --signal-soft:rgba(104,124,82,.14);
 
     --r:9px;
     --r-lg:15px;
@@ -66,9 +69,10 @@
       --ink-3:#6f6e67;
       --line:#3b3a35;
       --line-soft:#312f2b;
-      --signal:#d98a68;
-      --signal-display:#e8794d;
-      --signal-soft:rgba(217,138,104,.16);
+      --signal:#97a982;
+      --signal-rgb:151,169,130;
+      --signal-display:#a3b58c;
+      --signal-soft:rgba(151,169,130,.17);
     }
   }
 
@@ -206,6 +210,7 @@
   }
   nav.tabbar.shrunk{ transform:none; }
   nav.tabbar button{
+    position:relative;
     flex:1;
     background:transparent;
     border:none;
@@ -231,6 +236,7 @@
   }
   .bpm-display{ text-align:center; }
   .bpm-display .num{
+    display:inline-block;        /* 더블탭이 숫자 폭에만 반응하도록 */
     font-size:5.25rem;
     font-weight:200;               /* SF Pro에 실재하는 웨이트 (250은 합성되어 뭉개진다) */
     line-height:.92;
@@ -350,6 +356,7 @@
   .fretboard-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -2px; padding:0 2px;}
   .fretboard{display:inline-flex; flex-direction:column; gap:3px; padding:1px;}
   .fret-row{display:flex; gap:3px;}
+  .fret-row:first-child .fret-num{ height:auto; }
   .fret-cell{
     width:32px; height:30px; flex-shrink:0;
     border-radius:50%;
@@ -361,7 +368,11 @@
   .fret-cell.note{ border-color:var(--line-soft); }
   .fret-cell.scale{ background:var(--ink-2); border-color:var(--ink-2); color:var(--body); }
   .fret-cell.root{ background:var(--signal); border-color:var(--signal); color:#fff; font-weight:700; }
-  .fret-num{width:32px; text-align:center; font-size:0.5312rem; letter-spacing:.02em; color:var(--ink-3); flex-shrink:0; font-weight:500;}
+  .fret-num{
+    width:32px; text-align:center; font-size:0.5312rem; letter-spacing:.02em;
+    color:var(--ink-3); flex-shrink:0; font-weight:500;
+    display:flex; align-items:center; justify-content:center;   /* 동그라미와 세로 중앙 맞춤 */
+  }
 
   /* ---------- Ear / Rhythm ---------- */
   .score-row{
@@ -567,8 +578,8 @@
   .feedback-msg.no{ color:var(--signal); }
 
   /* ---------- 리듬: 비트 그리드 ---------- */
-  .beat-grid{ padding:4px 0; overflow:hidden; }
-  .grid-row{ --gc:20px; display:flex; justify-content:center; align-items:center; padding:10px 2px; }
+  .beat-grid{ padding:4px 0; overflow-x:auto; }
+  .grid-row{ --gc:20px; display:flex; justify-content:center; align-items:center; padding:10px 4px; min-width:min-content; }
   .gcell{
     position:relative;
     width:var(--gc); height:var(--gc); border-radius:50%; flex-shrink:0;
@@ -619,11 +630,14 @@
   .fretboard{ --fc:32px; }
   .fret-cell{
     width:var(--fc); height:calc(var(--fc) * 0.92);
-    font-size:0.6875rem;                 /* 맞춤 모드 기본 */
+    font-size:0.6875rem;
   }
+  /* 15프렛을 다 담으면 칸이 좁아지므로 글자도 함께 줄인다 */
+  .fretboard.tight .fret-cell{ font-size:0.5rem; letter-spacing:-.02em; }
+  .fretboard.tight .fret-num{ font-size:0.4688rem; }
   .fretboard.zoomed .fret-cell{ font-size:0.875rem; }
   .fretboard.zoomed .fret-num{ font-size:0.75rem; }
-  .fret-num{ width:var(--fc); }
+  .fret-num{ width:var(--fc); height:calc(var(--fc) * 0.92); }
   .fret-num.mark{ color:var(--ink-2); font-weight:700; }
 
 
@@ -661,7 +675,7 @@
     border:1px solid var(--line);
     display:flex; align-items:center; justify-content:center;
     cursor:pointer; padding:0; font-family:inherit;
-    transition:background .1s var(--ease-out), border-color .1s var(--ease-out), transform .12s var(--ease-out);
+    transition:background .36s cubic-bezier(.3,0,.4,1), border-color .3s var(--ease-out), transform .12s var(--ease-out);
   }
   .metro-orb:active{ transform:scale(.96); }
   /* 다이얼 눈금 */
@@ -673,28 +687,64 @@
     opacity:.5; pointer-events:none;
   }
   /* 발광 링 — opacity만 움직여 합성 단계에서 처리된다 */
-  .orb-glow{
-    position:absolute; inset:-7px; border-radius:50%;
-    box-shadow:0 0 0 7px var(--signal-soft), 0 0 22px 5px var(--signal-soft);
-    opacity:0; pointer-events:none;
-    transition:opacity .12s var(--ease-out);
+  /* 딱딱한 테두리 대신 방사형 그라디언트가 번지듯 퍼진다.
+     들어올 땐 빠르게, 사라질 땐 천천히 — 실제 빛이 잦아드는 느낌 */
+  /* <button>은 절대배치 자식을 테두리 밖으로 내보내지 못한다.
+     그래서 빛무리를 버튼의 '형제'로 두고 뒤에 깔았다. */
+  .orb-wrap{
+    position:relative;
+    width:100%; max-width:132px; aspect-ratio:1/1;
   }
+  .orb-wrap .metro-orb{ position:relative; z-index:1; width:100%; height:100%; max-width:none; }
+
+  /* 그라디언트 정지점을 아무리 촘촘히 찍어도 경계는 보인다.
+     계단식으로 색을 찍는 방식의 한계라, blur로 실제로 번지게 하는 게 답이다.
+     단순한 원 하나를 흐리면 물리적으로 매끈한 빛무리가 나온다. */
+  .orb-glow{
+    position:absolute; inset:14%;
+    border-radius:50%;
+    background:rgb(var(--signal-rgb));
+    filter:blur(26px);
+    opacity:0;
+    pointer-events:none;
+    z-index:0;
+  }
+  /* 소리 나는 순간 최대 밝기에서 시작해 곧바로 잦아든다.
+     transition은 클래스가 빠질 때부터 페이드가 시작돼 '팍' 하는 느낌이 안 난다. */
+  @keyframes orbPulse{
+    0%   { opacity:.85; transform:scale(1.06); }
+    18%  { opacity:.60; transform:scale(1.00); }
+    55%  { opacity:.22; transform:scale(.95);  }
+    100% { opacity:0;   transform:scale(.90);  }
+  }
+  .metro-orb.flash ~ .orb-glow{
+    animation:orbPulse .52s cubic-bezier(.16,.7,.3,1) forwards;
+  }
+
   .orb-label{
     position:relative; z-index:2;
     font-size:0.6875rem; font-weight:500; letter-spacing:.06em;
-    color:var(--ink-3); transition:color .1s var(--ease-out);
+    color:var(--ink-3);
+    transition:color .3s cubic-bezier(.3,0,.4,1);
   }
   .metro-orb.running{ border-color:var(--signal); }
   .metro-orb.running .orb-label{ color:var(--signal); }
   /* 박자마다 오렌지로 발광 */
-  .metro-orb.flash{
-    background:var(--signal); border-color:var(--signal);
+  @keyframes orbBody{
+    0%   { background:rgb(var(--signal-rgb)); border-color:rgb(var(--signal-rgb)); }
+    100% { background:var(--key);             border-color:var(--line); }
   }
-  .metro-orb.flash .orb-label{ color:#fff; }
-  .metro-orb.flash .orb-glow{ opacity:1; }
+  .metro-orb.flash{
+    animation:orbBody .5s cubic-bezier(.16,.7,.3,1) forwards;
+  }
+  @keyframes orbText{
+    0%{ color:#fff; } 100%{ color:var(--ink-3); }
+  }
+  .metro-orb.flash .orb-label{ animation:orbText .5s cubic-bezier(.16,.7,.3,1) forwards; }
+
 
   @media (max-width:360px){
-    .metro-orb{ width:96px; height:96px; }
+    .orb-wrap{ max-width:96px; }
     .metro-left .bpm-display .num{ font-size:3.25rem; }
   }
 
@@ -726,6 +776,75 @@
   .seg-btn.active{ background:var(--ink); color:var(--body); }
   .trainer-pane{ display:none; }
   .trainer-pane.active{ display:block; animation:in .24s var(--ease-out); }
+
+  /* ---------- 잼: 상단 트랜스포트 ---------- */
+  .jam-head{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);  /* BPM이 카드 정중앙 */
+    align-items:center; gap:8px;
+  }
+  .jam-head .play-orb{ justify-self:end; }
+  .jam-sel{ display:flex; gap:5px; min-width:0; }
+  .jam-sel select{ padding:8px 7px; font-size:0.6875rem; padding-right:21px; background-position:right 6px center; min-width:0; }
+  .jam-bpm{
+    display:flex; align-items:baseline; justify-content:center; gap:4px; grid-column:2;
+    -webkit-user-select:none; user-select:none;
+  }
+  .jam-bpm b{ cursor:pointer;
+    font-size:2.25rem; font-weight:250; letter-spacing:-.04em;
+    font-variant-numeric:tabular-nums; font-feature-settings:'tnum' 1;
+    font-optical-sizing:auto; color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .jam-bpm span{ font-size:0.5625rem; color:var(--ink-3); font-weight:500; letter-spacing:.08em; }
+  .jam-keys{
+    display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:6px; margin-top:14px;
+  }
+  .jam-keys .key{ padding:12px 0; font-size:1rem; min-height:46px; touch-action:none; }
+  .jam-keys .tap{ font-size:0.75rem; letter-spacing:.08em; }
+
+  @media (max-width:340px){
+    .jam-bpm b{ cursor:pointer; font-size:1.875rem; }
+    .jam-head{ gap:8px; }
+  }
+
+  /* 지금 소리를 내고 있는 탭 */
+  nav.tabbar button.sounding{ color:var(--signal); }
+  /* 아이콘 주변에만 동그랗게. 박마다 pulseTab()이 .beat를 붙였다 뗀다.
+     여기도 blur로 번지게 하고, 감쇠는 keyframe으로 처리한다. */
+  nav.tabbar button.sounding::after{
+    content:''; position:absolute;
+    left:50%; top:10px; width:26px; height:26px; margin-left:-13px;
+    border-radius:50%;
+    background:rgb(var(--signal-rgb));
+    filter:blur(9px);
+    opacity:.22;
+    pointer-events:none; z-index:-1;
+  }
+  @keyframes tabPulse{
+    0%   { opacity:.85; transform:scale(1.25); }
+    22%  { opacity:.55; transform:scale(1.05); }
+    100% { opacity:.22; transform:scale(1);    }
+  }
+  nav.tabbar button.sounding.beat::after{
+    animation:tabPulse .42s cubic-bezier(.16,.7,.3,1) forwards;
+  }
+  nav.tabbar button.sounding.active{ color:var(--body); }
+  nav.tabbar button.sounding.active::after{ background:#fff; opacity:.16; }
+  nav.tabbar button.sounding.active.beat::after{
+    animation:tabPulseLight .42s cubic-bezier(.16,.7,.3,1) forwards;
+  }
+  @keyframes tabPulseLight{
+    0%   { opacity:.6;  transform:scale(1.25); }
+    22%  { opacity:.36; transform:scale(1.05); }
+    100% { opacity:.16; transform:scale(1);    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    nav.tabbar button.sounding::after{ opacity:.5; }
+    nav.tabbar button.sounding.beat::after{ animation:none; opacity:.7; }
+    .metro-orb.flash ~ .orb-glow{ animation:none; opacity:.5; }
+    .orb-glow{ transform:none; }
+  }
 </style>
 </head>
 <body>
@@ -742,7 +861,7 @@
         <div class="metro-main">
           <div class="metro-left">
             <div class="bpm-display">
-              <div class="num" id="bpmNum">100</div>
+              <div class="num" id="bpmNum" title="두 번 누르면 기본값">100</div>
               <div class="lbl">BPM</div>
             </div>
             <div class="tempo-keys">
@@ -752,10 +871,12 @@
             <button class="btn key tap" id="tapTempoBtn">TAP</button>
           </div>
           <div class="metro-right">
-            <button class="metro-orb" id="metroStart" aria-label="시작 또는 정지">
+            <div class="orb-wrap">
+              <button class="metro-orb" id="metroStart" aria-label="시작 또는 정지">
+                <span class="orb-label" id="orbLabel">시작</span>
+              </button>
               <span class="orb-glow"></span>
-              <span class="orb-label" id="orbLabel">시작</span>
-            </button>
+            </div>
             <div class="beat-dots" id="beatDots"></div>
           </div>
         </div>
@@ -800,6 +921,7 @@
           </div>
           <div class="tuner-freq" id="tunerFreq">마이크 꺼짐</div>
           <div class="strobe-hint"><span id="strobeDir">— 조율 대기 —</span></div>
+          <div class="in-level"><div class="in-level-bar" id="tunerLevel"></div></div>
         </div>
         <button class="btn primary wide" id="tunerStart" style="margin-top:14px;">마이크 켜기</button>
       </div>
@@ -904,7 +1026,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
           </button>
           <div class="tempo-readout">
-            <span class="v" id="rhyBpmVal">90</span><span class="u">BPM</span>
+            <span class="v" id="rhyBpmVal" title="두 번 누르면 기본값">90</span><span class="u">BPM</span>
           </div>
           <button class="btn" id="rhyTap">TAP</button>
         </div>
@@ -950,14 +1072,27 @@
     <!-- JAM -->
     <section class="tabpanel" id="tab-jam">
       <div class="card">
-        <div class="row">
-          <select id="jamKey"></select>
-          <select id="jamMode">
-            <option value="major">Major</option>
-            <option value="minor">Minor</option>
-          </select>
+        <div class="jam-head">
+          <div class="jam-sel">
+            <select id="jamKey"></select>
+            <select id="jamMode">
+              <option value="major">Major</option>
+              <option value="minor">Minor</option>
+            </select>
+          </div>
+          <div class="jam-bpm" id="jamBpmBox" title="두 번 누르면 기본값">
+            <b id="jamBpmVal">80</b><span>BPM</span>
+          </div>
+          <button class="play-orb sm" id="jamStart" aria-label="재생">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+          </button>
         </div>
-        <select id="jamPreset" style="width:100%; margin-top:9px;"></select>
+        <div class="jam-keys">
+          <button class="btn key" id="jamMinus" aria-label="느리게">−</button>
+          <button class="btn key tap" id="jamTap">TAP</button>
+          <button class="btn key" id="jamPlus" aria-label="빠르게">+</button>
+        </div>
+        <select id="jamPreset" style="width:100%; margin-top:12px;"></select>
       </div>
 
       <div class="card">
@@ -979,12 +1114,6 @@
         <div class="pill-group" id="stylePresets"></div>
         <h2 style="margin:20px 0 13px;">트랙</h2>
         <div class="pill-group" id="trackToggles"></div>
-        <div class="row" style="margin-top:18px;">
-          <span style="font-size:12px;">템포</span>
-          <span id="jamBpmLabel" style="font-weight:560; font-variant-numeric:tabular-nums;">80 BPM</span>
-        </div>
-        <div class="slider-wrap"><input type="range" id="jamBpmSlider" min="50" max="180" value="80"><div class="slider-ticks"></div></div>
-        <button class="btn primary wide" id="jamStart" style="margin-top:10px;">재생</button>
       </div>
 
       <div class="card">
@@ -1243,6 +1372,81 @@ function pianoChord(midis, when, dur, vol=0.18){
   midis.forEach((m,i)=> pianoNote(m,(when||getCtx().currentTime)+i*0.010, dur, vol));
 }
 
+/* ===== 템포 조작 공통 =====
+   메트로놈·리듬·잼이 같은 방식으로 동작하도록 한곳에 모은다. */
+
+// 짧게 누르면 1, 길게 누르고 있으면 10씩 연속 변화
+function bindTempoKeys(minusEl, plusEl, get, set){
+  [[minusEl,-1],[plusEl,1]].forEach(([el,dir])=>{
+    if(!el) return;
+    let holdTimer=null, repTimer=null, didHold=false;
+    const start=()=>{
+      didHold=false;
+      holdTimer=setTimeout(()=>{
+        didHold=true;
+        set(get()+dir*10);
+        repTimer=setInterval(()=>set(get()+dir*10), 150);
+      }, 450);
+    };
+    const end=()=>{ clearTimeout(holdTimer); clearInterval(repTimer); holdTimer=repTimer=null; };
+    el.addEventListener('pointerdown', e=>{ e.preventDefault(); start(); });
+    el.addEventListener('pointerup', ()=>{ if(!didHold) set(get()+dir); end(); });
+    el.addEventListener('pointerleave', end);
+    el.addEventListener('pointercancel', end);
+  });
+}
+
+// 두드린 간격의 평균으로 템포를 잡는다
+function bindTapTempo(el, set){
+  if(!el) return;
+  let taps=[];
+  el.addEventListener('click', ()=>{
+    const now=performance.now();
+    taps.push(now);
+    taps=taps.filter(t=>now-t<3000);
+    if(taps.length>1){
+      const iv=[];
+      for(let i=1;i<taps.length;i++) iv.push(taps[i]-taps[i-1]);
+      set(60000/(iv.reduce((a,b)=>a+b,0)/iv.length));
+    }
+  });
+}
+
+// 숫자를 두 번 누르면 기본값으로
+function bindResetOnDouble(el, reset){
+  if(!el) return;
+  let last=0;
+  const hit=()=>{
+    const now=performance.now();
+    if(now-last<400){ reset(); last=0; } else last=now;
+  };
+  el.addEventListener('click', hit);
+  el.style.cursor='pointer';
+  el.style.userSelect='none';
+}
+
+/* ===== 소리 나는 탭 표시 =====
+   여러 곳에서 동시에 울릴 수 있으므로(예: 잼 재생 + 드론) 출처별로 세어둔다. */
+const __sounding = {};
+// 박마다 호출 — 탭 발광이 템포에 맞춰 뛴다
+function pulseTab(tab){
+  const btn=document.querySelector('.tab-btn[data-tab="'+tab+'"]');
+  if(!btn || !btn.classList.contains('sounding')) return;
+  // 같은 클래스를 다시 붙여도 애니메이션은 재생되지 않는다.
+  // 뗀 뒤 강제로 리플로우를 일으켜야 매 박마다 새로 시작한다.
+  btn.classList.remove('beat');
+  void btn.offsetWidth;
+  btn.classList.add('beat');
+}
+
+function setTabSounding(tab, on, source){
+  const key = source || tab;
+  if(!__sounding[tab]) __sounding[tab] = new Set();
+  on ? __sounding[tab].add(key) : __sounding[tab].delete(key);
+  const btn = document.querySelector('.tab-btn[data-tab="'+tab+'"]');
+  if(btn) btn.classList.toggle('sounding', __sounding[tab].size > 0);
+}
+
 /* ===================== 탭 전환 ===================== */
 const tabTitles = {metronome:'메트로놈', tuner:'튜너', scales:'스케일', trainer:'트레이너', jam:'잼 세션'};
 document.querySelectorAll('.tab-btn').forEach(btn=>{
@@ -1258,7 +1462,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
 /* ===================== 메트로놈 ===================== */
 (function(){
-  let bpm = 100, beatsPerMeasure = 4, subdivision = 1, accentOn = true;
+  const BPM_DEFAULT = 100;
+  let bpm = BPM_DEFAULT, beatsPerMeasure = 4, subdivision = 1, accentOn = true;
   let isPlaying = false;
   let currentStep = 0, nextNoteTime = 0.0, timerID = null;
   const scheduleAheadTime = 0.12, lookahead = 25;
@@ -1283,41 +1488,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function updateBpmUI(){ bpmNum.textContent = bpm; }
   function setBpm(v){ bpm = Math.max(30, Math.min(260, v)); updateBpmUI(); }
 
-  // 짧게 누르면 1, 길게 누르고 있으면 10씩 연속 변화
-  function bindStep(el, dir){
-    let holdTimer=null, repTimer=null, didHold=false;
-    const startHold = ()=>{
-      didHold=false;
-      holdTimer=setTimeout(()=>{
-        didHold=true;
-        setBpm(bpm + dir*10);
-        repTimer=setInterval(()=>setBpm(bpm + dir*10), 150);
-      }, 450);
-    };
-    const endHold = ()=>{
-      clearTimeout(holdTimer); clearInterval(repTimer);
-      holdTimer=repTimer=null;
-    };
-    el.addEventListener('pointerdown', e=>{ e.preventDefault(); startHold(); });
-    el.addEventListener('pointerup', ()=>{ if(!didHold) setBpm(bpm + dir); endHold(); });
-    el.addEventListener('pointerleave', endHold);
-    el.addEventListener('pointercancel', endHold);
-  }
-  bindStep(document.getElementById('bpmMinus'), -1);
-  bindStep(document.getElementById('bpmPlus'),  +1);
+  bindTempoKeys(document.getElementById('bpmMinus'),
+                document.getElementById('bpmPlus'),
+                ()=>bpm, setBpm);
+  bindResetOnDouble(bpmNum, ()=>setBpm(BPM_DEFAULT));
 
-  let tapTimes = [];
-  document.getElementById('tapTempoBtn').addEventListener('click', ()=>{
-    const now = performance.now();
-    tapTimes.push(now);
-    tapTimes = tapTimes.filter(t=>now-t < 3000);
-    if(tapTimes.length>1){
-      let intervals=[];
-      for(let i=1;i<tapTimes.length;i++) intervals.push(tapTimes[i]-tapTimes[i-1]);
-      const avg = intervals.reduce((a,b)=>a+b,0)/intervals.length;
-      setBpm(Math.round(60000/avg));
-    }
-  });
+  bindTapTempo(document.getElementById('tapTempoBtn'), setBpm);
 
   document.querySelectorAll('#beatsGroup .pill').forEach(p=>{
     p.addEventListener('click', ()=>{
@@ -1367,8 +1543,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     while(scheduledBeats.length && scheduledBeats[0].time <= now){
       const b = scheduledBeats.shift();
       if(b.isBeatStart){
+        metroStart.classList.remove('flash');
+        void metroStart.offsetWidth;      // 애니메이션 재시작
         metroStart.classList.add('flash');
-        setTimeout(()=>metroStart.classList.remove('flash'), 95);
+        pulseTab('metronome');
         const dots = beatDotsEl.children;
         Array.from(dots).forEach(d=>d.classList.remove('on','accent-on'));
         if(dots[b.beatIndex]) dots[b.beatIndex].classList.add(b.isAccent?'accent-on':'on');
@@ -1388,11 +1566,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       visualLoop();
       orbLabel.textContent = '정지';
       metroStart.classList.add('running');
+      setTabSounding('metronome', true);
     } else {
       isPlaying = false;
       clearTimeout(timerID);
       orbLabel.textContent = '시작';
       metroStart.classList.remove('running','flash');
+      setTabSounding('metronome', false);
       Array.from(beatDotsEl.children).forEach(d=>d.classList.remove('on','accent-on'));
     }
   });
@@ -1419,10 +1599,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const strobeOuter = document.getElementById('strobeOuter');
   const strobeInner = document.getElementById('strobeInner');
   const strobeDir   = document.getElementById('strobeDir');
+  const levelEl     = document.getElementById('tunerLevel');
 
   let currentTuning='guitar';
   let listening=false, stream=null, analyser=null, buf=null, srcNode=null;
   let strobeCents=0, strobeAngle=0, strobeLast=0;
+  let lastNote=null, quietFrames=0, inLevel=0;
+  let freqLo=70, freqHi=1400;   // 선택된 튜닝에 따라 정해진다
 
   /* =========================================================
      YIN 피치 검출 (de Cheveigné & Kawahara, 2002)
@@ -1477,7 +1660,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     let rms=0;
     for(let i=0;i<N;i++) rms += x[i]*x[i];
     rms=Math.sqrt(rms/N);
-    if(rms < 0.008) return null;
+    if(rms < 0.0015) return null;   // 실측: 이 아래는 YIN도 못 잡는다. 위로는 암소음 오검출 0건
 
     // --- 교차상관을 FFT로 (a=앞 W샘플, b=전체 N샘플) ---
     aRe.fill(0); aIm.fill(0); bRe.fill(0); bIm.fill(0);
@@ -1545,10 +1728,10 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   /* ---------- 안정화: 중앙값 + 지수 평활 ---------- */
   const hist=[];
-  let smoothCents=0, haveLock=false;
+  let smoothCents=0, haveLock=false, wasInTune=false;
   function stabilize(freq){
     hist.push(freq);
-    if(hist.length>5) hist.shift();
+    if(hist.length>3) hist.shift();     // 5개는 지연이 200ms나 됐다
     const s=hist.slice().sort((a,b)=>a-b);
     return s[s.length>>1];              // 중앙값 — 튀는 값 제거
   }
@@ -1557,6 +1740,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   function renderStringButtons(){
     stringBtns.innerHTML='';
     const t=TUNINGS[currentTuning];
+    // 이 악기가 낼 수 있는 음역 밖은 아예 보지 않는다.
+    // 기타를 고르면 하한이 약 72Hz라 선풍기 소리(28~70Hz)가 구조적으로 걸러진다.
+    const lo=Math.min(...t.strings), hi=Math.max(...t.strings);
+    freqLo=midiToFreq(lo)*0.87;      // 많이 풀린 줄도 잡을 만큼의 여유
+    freqHi=midiToFreq(hi+26);        // 하이 프렛까지
     stringBtns.style.gridTemplateColumns=`repeat(${t.strings.length},1fr)`;
     t.strings.forEach(midi=>{
       const b=document.createElement('button');
@@ -1575,15 +1763,23 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const nearest=Math.round(midi);
     const cents=(midi-nearest)*100;
 
-    // 센트값도 부드럽게 (바늘 떨림 억제)
-    smoothCents = haveLock ? smoothCents + (cents-smoothCents)*0.35 : cents;
+    // 새 현을 치면 즉시 따라가고, 미세 조정 중일 때만 부드럽게 한다.
+    // 항상 느리게 평활하면 줄을 바꿔도 바늘이 천천히 기어가 답답하다.
+    const jumped = !haveLock || nearest!==lastNote || Math.abs(cents-smoothCents)>35;
+    smoothCents = jumped ? cents : smoothCents + (cents-smoothCents)*0.45;
+    lastNote = nearest;
     haveLock = true;
 
     tunerNote.textContent=midiToName(nearest);
     tunerFreq.textContent=freq.toFixed(1)+' Hz';
 
     strobeCents=Math.max(-50,Math.min(50,smoothCents));
-    const inTune=Math.abs(smoothCents)<3;
+    // 3센트는 스트로보 튜너 기준이라 실제 연습엔 너무 빡빡했다.
+    // 일반 기타 튜너와 같은 ±5센트로 하고, 경계에서 깜빡이지 않도록
+    // 한 번 들어오면 8센트를 넘을 때까지 유지한다.
+    const a=Math.abs(smoothCents);
+    const inTune = wasInTune ? a<8 : a<5;
+    wasInTune = inTune;
     strobe.classList.toggle('in-tune', inTune);
     strobeDir.textContent = inTune ? '정확함'
       : (smoothCents>0 ? '높음 ▶ '+smoothCents.toFixed(0)+'¢'
@@ -1595,7 +1791,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function idle(){
-    haveLock=false; hist.length=0;
+    haveLock=false; hist.length=0; lastNote=null; wasInTune=false;
+    tunerNote.textContent='--';
+    tunerFreq.textContent='연주해보세요';
     strobeCents=0;
     strobe.classList.remove('in-tune');
     strobeDir.textContent='—';
@@ -1606,12 +1804,27 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   let lastRun=0;
   function analyse(ts){
     if(!listening) return;
-    if(ts-lastRun > 40){
+    if(ts-lastRun > 22){                 // 25Hz -> 45Hz
       lastRun=ts;
       analyser.getFloatTimeDomainData(buf);
+      // 입력 세기 (마이크가 소리를 받고 있는지 눈으로 확인할 수 있게)
+      let rms=0;
+      for(let i=0;i<buf.length;i+=4) rms+=buf[i]*buf[i];
+      rms=Math.sqrt(rms/(buf.length/4));
+      inLevel = inLevel*0.7 + Math.min(1, rms*14)*0.3;
+      if(levelEl) levelEl.style.transform='scaleX('+inLevel.toFixed(3)+')';
+
       const r=yin(buf, audioCtx.sampleRate);
-      if(r && r.clarity>0.55 && r.freq>25 && r.freq<1500){
+      // 선풍기·에어컨은 '음정이 있는' 소음이라 게이트로는 못 거른다.
+      // 주기성(clarity)과 악기의 실제 음역으로 판별한다. (실측: 소음 오검출 0/40)
+      if(r && r.clarity>0.85 && r.freq>freqLo && r.freq<freqHi){
+        const nRaw=Math.round(69+12*Math.log2(r.freq/440));
+        if(nRaw!==lastNote) hist.length=0;   // 다른 음이면 이력을 비워 즉시 반응
         update(stabilize(r.freq));
+        quietFrames=0;
+      } else {
+        // 소리가 끊기면 잠시 뒤 대기 상태로 (마지막 값이 계속 떠 있지 않게)
+        if(++quietFrames > 45) { quietFrames=0; idle(); }
       }
     }
     requestAnimationFrame(analyse);
@@ -1635,10 +1848,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(listening){
       listening=false;
       if(stream) stream.getTracks().forEach(t=>t.stop());
+      setTabSounding('tuner', false, 'mic');
       tunerStart.textContent='마이크 켜기';
-      tunerFreq.textContent='마이크 꺼짐';
-      tunerNote.textContent='--';
       idle();
+      tunerFreq.textContent='마이크 꺼짐';
+      inLevel=0;
+      if(levelEl) levelEl.style.transform='scaleX(0)';
       return;
     }
     try{
@@ -1659,9 +1874,15 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       analyser.smoothingTimeConstant=0;
       buf=new Float32Array(N);
 
-      srcNode.connect(hp); hp.connect(lp); lp.connect(analyser);
+      // 기기 마이크가 조용한 경우가 많아 분석 전에 키워준다.
+      // YIN은 신호 크기와 무관하지만 게이트 통과와 수치 정밀도에 도움이 된다.
+      const boost=audioCtx.createGain();
+      boost.gain.value=4;
+
+      srcNode.connect(hp); hp.connect(lp); lp.connect(boost); boost.connect(analyser);
 
       listening=true;
+      setTabSounding('tuner', true, 'mic');
       tunerStart.textContent='마이크 끄기';
       tunerFreq.textContent='연주해보세요';
       requestAnimationFrame(analyse);
@@ -1743,13 +1964,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       // 확대: 화면 폭을 z.visible칸이 꽉 채우도록 칸을 키운다.
       // 프렛은 15까지 모두 그리므로 좌우로 밀어서 볼 수 있다 = 보드가 확대된 것.
       const cell = Math.floor((w - gap*(z.visible-1)) / z.visible);
-      return {cell, frets:15};
+      return {cell, frets:15};   // 1~15프렛, 화면엔 z.visible칸만 보이고 나머지는 스크롤
     }
-    // 맞춤: 읽을 수 있는 최소 크기(26px)를 지키는 선에서 최대한 많은 프렛을
-    let cols = Math.floor((w + gap) / (26 + gap));
-    cols = Math.max(6, Math.min(17, cols));
+    // 맞춤: 1~15프렛을 화면 안에 전부 담는다.
+    // 0프렛은 그리지 않는다 — 개방현은 맨 왼쪽 현 이름이 그 역할을 한다.
+    const FIT_FRETS = 15;
+    const cols = FIT_FRETS + 1;           // 현 이름 라벨 1칸 + 1~15프렛
     const cell = Math.floor((w - gap*(cols-1)) / cols);
-    return {cell, frets: cols - 2};       // cols = 라벨 1 + 프렛(frets+1)
+    return {cell, frets: FIT_FRETS};
   }
 
   function render(){
@@ -1767,13 +1989,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     fretboard.style.setProperty('--fc', size+'px');
     fretboard.classList.toggle('compact', !showText);
     fretboard.classList.toggle('zoomed', zoom==='zoom');
+    fretboard.classList.toggle('tight', size < 20);
     fretScroll.classList.toggle('fit', zoom==='fit');
 
     fretboard.innerHTML='';
     const head=document.createElement('div');
     head.className='fret-row';
     const corner=document.createElement('div'); corner.className='fret-num'; head.appendChild(corner);
-    for(let f=0; f<=FRETS; f++){
+    for(let f=1; f<=FRETS; f++){        // 0프렛(개방현)은 왼쪽 현 이름이 대신한다
       const n=document.createElement('div');
       n.className='fret-num'+([3,5,7,9,12,15].includes(f)?' mark':'');
       n.textContent=f;
@@ -1786,7 +2009,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const lab=document.createElement('div'); lab.className='fret-num';
       lab.textContent=pcName(tuning.strings[s]%12);
       row.appendChild(lab);
-      for(let f=0; f<=FRETS; f++){
+      for(let f=1; f<=FRETS; f++){
         const midi=tuning.strings[s]+f;
         const pc=((midi%12)+12)%12;
         const c=document.createElement('div');
@@ -2091,7 +2314,12 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const steps=pattern.length;
     const w=beatGrid.clientWidth || 330;
     const gap=3;
-    const size=Math.max(11, Math.min(30, Math.floor((w - gap*(steps-1))/steps)));
+    // 정박 동그라미는 1.32배로 커서 그만큼을 셈에 넣지 않으면 양끝이 잘린다.
+    // 전체폭 = size*(일반칸 수) + 1.32*size*(정박 수) + 간격 + 좌우 여유
+    const nBeat=Math.ceil(steps/4);
+    const pad=6;
+    const size=Math.max(10, Math.min(30,
+      Math.floor((w - pad - gap*(steps-1)) / (steps + 0.32*nBeat))));
     row.style.setProperty('--gc', size+'px');
     row.style.gap=gap+'px';
     pattern.forEach((on,i)=>{
@@ -2137,17 +2365,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     setPattern(new Array(b*4).fill(0).map((_,i)=>i%4===0?1:0), b);
   });
 
-  let taps=[];
-  rhyTap.addEventListener('click', ()=>{
-    const now=performance.now();
-    taps.push(now); taps=taps.filter(t=>now-t<3000);
-    if(taps.length>1){
-      const iv=[]; for(let i=1;i<taps.length;i++) iv.push(taps[i]-taps[i-1]);
-      const avg=iv.reduce((a,b)=>a+b,0)/iv.length;
-      const bpm=Math.round(Math.min(200,Math.max(40,60000/avg)));
-      rhyBpm.value=bpm; rhyBpmVal.textContent=bpm;
-    }
-  });
+  const RHY_BPM_DEFAULT = 90;
+  function setRhyBpm(v){
+    const b=Math.max(40, Math.min(200, Math.round(v)));
+    rhyBpm.value=b; rhyBpmVal.textContent=b;
+  }
+  bindTapTempo(rhyTap, setRhyBpm);
+  bindResetOnDouble(rhyBpmVal, ()=>setRhyBpm(RHY_BPM_DEFAULT));
 
   /* ---------- 소리 ---------- */
   function kick(ctx,t){
@@ -2213,6 +2437,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       cells.forEach(c=>c.classList.remove('cursor'));
       const c=beatGrid.querySelector(`.gcell[data-i="${m.i}"]`);
       if(c) c.classList.add('cursor');
+      if(m.i%4===0) pulseTab('trainer');
     }
     requestAnimationFrame(visual);
   }
@@ -2226,12 +2451,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     schedule(); visual();
     rhyPlay.classList.add('on');
     rhyPlay.querySelector('svg').innerHTML='<rect x="7" y="6" width="3.6" height="12" rx="1.2"/><rect x="13.4" y="6" width="3.6" height="12" rx="1.2"/>';
+    setTabSounding('trainer', true, 'rhythm');
   }
   function stop(){
     playing=false;
     clearTimeout(timerID); marks=[];
     rhyPlay.classList.remove('on');
     rhyPlay.querySelector('svg').innerHTML='<path d="M8 5.5v13l11-6.5z"/>';
+    setTabSounding('trainer', false, 'rhythm');
     beatGrid.querySelectorAll('.gcell').forEach(c=>c.classList.remove('cursor'));
   }
   rhyPlay.addEventListener('click', ()=> playing?stop():start());
@@ -2345,8 +2572,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const chordPalette  = document.getElementById('chordPalette');
   const stylePresets  = document.getElementById('stylePresets');
   const trackToggles  = document.getElementById('trackToggles');
-  const jamBpmSlider  = document.getElementById('jamBpmSlider');
-  const jamBpmLabel   = document.getElementById('jamBpmLabel');
+  const jamBpmVal     = document.getElementById('jamBpmVal');
+  const jamBpmBox     = document.getElementById('jamBpmBox');
+  const jamMinus      = document.getElementById('jamMinus');
+  const jamPlus       = document.getElementById('jamPlus');
+  const jamTap        = document.getElementById('jamTap');
+  const JAM_BPM_DEFAULT = 80;
+  let jamBpm = JAM_BPM_DEFAULT;
   const jamStart      = document.getElementById('jamStart');
   const jamDroneBtn   = document.getElementById('jamDroneBtn');
 
@@ -2355,6 +2587,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
   jamKey.value = 0;
 
+  {
+    const o=document.createElement('option');
+    o.value='custom'; o.textContent='커스텀';
+    jamPreset.appendChild(o);
+  }
   Object.entries(PRESETS).forEach(([k,v])=>{
     const o=document.createElement('option'); o.value=k; o.textContent=v.label; jamPreset.appendChild(o);
   });
@@ -2381,7 +2618,13 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     trackToggles.appendChild(b);
   });
 
-  jamBpmSlider.addEventListener('input', ()=>{ jamBpmLabel.textContent = jamBpmSlider.value+' BPM'; });
+  function setJamBpm(v){
+    jamBpm = Math.max(40, Math.min(220, Math.round(v)));
+    jamBpmVal.textContent = jamBpm;
+  }
+  bindTempoKeys(jamMinus, jamPlus, ()=>jamBpm, setJamBpm);
+  bindTapTempo(jamTap, setJamBpm);
+  bindResetOnDouble(jamBpmVal, ()=>setJamBpm(JAM_BPM_DEFAULT));
 
   /* ---------- 코드 계산 ---------- */
   function qualitiesFor(mode){ return mode==='minor' ? MINOR_Q : MAJOR_Q; }
@@ -2415,12 +2658,16 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       b.innerHTML = `<span class="rn">${c.rn}</span><span class="nm">${c.name}</span>`;
       b.addEventListener('click', ()=>{
         progression.push({deg, beats:4});
+        markCustom();
         renderTimeline();
         previewChord(deg);
       });
       chordPalette.appendChild(b);
     }
   }
+
+  // 사용자가 손대는 순간 프리셋 이름을 붙들고 있지 않는다
+  function markCustom(){ if(jamPreset.value!=='custom') jamPreset.value='custom'; }
 
   function renderTimeline(){
     progTimeline.innerHTML='';
@@ -2452,13 +2699,14 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
           ev.stopPropagation();
           const d = btn.dataset.act==='inc' ? 1 : -1;
           item.beats = Math.max(1, Math.min(8, item.beats + d));
+          markCustom();
           renderTimeline();
         });
       });
       // 길게 눌러 삭제
       let holdTimer=null;
       const startHold = ()=>{ holdTimer=setTimeout(()=>{
-        progression.splice(i,1); renderTimeline();
+        progression.splice(i,1); markCustom(); renderTimeline();
       }, 500); };
       const cancelHold = ()=> clearTimeout(holdTimer);
       el.addEventListener('touchstart', startHold, {passive:true});
@@ -2475,6 +2723,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   }
 
   function loadPreset(){
+    if(jamPreset.value==='custom'){       // 빈 상태에서 직접 쌓아 올린다
+      progression = [];
+      renderPalette(); renderTimeline();
+      return;
+    }
     const p = PRESETS[jamPreset.value];
     if(!p) return;
     jamMode.value = p.mode;
@@ -2618,7 +2871,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     if(tracks.click && s%4===0){
       playClick(when - ctx.currentTime, cell.stepInBar===0);
     }
-    const secPerStep = (60/parseInt(jamBpmSlider.value))/4;
+    const secPerStep = (60/jamBpm)/4;
     if(tracks.bass){
       BASS_PATTERNS[st.bass].forEach(p=>{
         // c.pc는 조성이 반영된 실제 음이름. 36+pc = C2~B2 (베이스 음역)
@@ -2638,7 +2891,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 
   function scheduler(){
     const ctx=getCtx();
-    const bpm=parseInt(jamBpmSlider.value);
+    const bpm=jamBpm;
     const secPerStep=(60/bpm)/4;
     const st=STYLES[styleKey];
     while(nextStepTime < ctx.currentTime + AHEAD){
@@ -2658,6 +2911,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       const m=scheduledMarks.shift();
       const bars=progTimeline.querySelectorAll('.prog-bar');
       bars.forEach((b,i)=> b.classList.toggle('now', i===m.barIdx));
+      pulseTab('jam');
       const cur=bars[m.barIdx];
       // scrollIntoView는 조상 요소까지 세로로 끌어올린다.
       // 타임라인 컨테이너의 가로 스크롤만 직접 움직인다.
@@ -2676,8 +2930,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     playing=false;
     clearTimeout(timerID);
     scheduledMarks=[];
-    jamStart.textContent='재생';
-    jamStart.classList.remove('danger'); jamStart.classList.add('primary');
+    jamStart.classList.remove('on');
+    jamStart.querySelector('svg').innerHTML='<path d="M8 5.5v13l11-6.5z"/>';
+    setTabSounding('jam', false, 'play');
     progTimeline.querySelectorAll('.prog-bar').forEach(b=>b.classList.remove('now'));
   }
 
@@ -2690,8 +2945,9 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     nextStepTime=ctx.currentTime+0.06;
     scheduler();
     visualLoop();
-    jamStart.textContent='정지';
-    jamStart.classList.remove('primary'); jamStart.classList.add('danger');
+    jamStart.classList.add('on');
+    jamStart.querySelector('svg').innerHTML='<rect x="7" y="6" width="3.6" height="12" rx="1.2"/><rect x="13.4" y="6" width="3.6" height="12" rx="1.2"/>';
+    setTabSounding('jam', true, 'play');
   });
 
   /* ---------- 드론 ---------- */
@@ -2702,6 +2958,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
       droneNodes=null;
       jamDroneBtn.textContent='드론 재생';
       jamDroneBtn.classList.remove('danger');
+      setTabSounding('jam', false, 'drone');
       return;
     }
     const ctx=getCtx();
@@ -2718,6 +2975,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     });
     jamDroneBtn.textContent='드론 정지';
     jamDroneBtn.classList.add('danger');
+    setTabSounding('jam', true, 'drone');
   });
 
   /* ---------- 초기화 ---------- */
