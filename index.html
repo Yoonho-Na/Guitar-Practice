@@ -628,16 +628,22 @@
 
   /* ---------- 프렛보드 ---------- */
   .fretboard{ --fc:32px; }
+  /* 글자를 고정값으로 두면 큰 화면에서 칸만 커지고 글자는 그대로라
+     동그라미 안에 점처럼 보인다. 칸 크기(--fc)에 비례시킨다.
+     clamp로 위아래 한계를 둬서 아주 좁을 때도 읽히고
+     아주 넓을 때도 과하게 커지지 않는다. */
   .fret-cell{
     width:var(--fc); height:calc(var(--fc) * 0.92);
-    font-size:0.6875rem;
+    font-size:clamp(8px, calc(var(--fc) * 0.44), 20px);
+    letter-spacing:-.02em;
   }
-  /* 15프렛을 다 담으면 칸이 좁아지므로 글자도 함께 줄인다 */
-  .fretboard.tight .fret-cell{ font-size:0.5rem; letter-spacing:-.02em; }
-  .fretboard.tight .fret-num{ font-size:0.4688rem; }
-  .fretboard.zoomed .fret-cell{ font-size:0.875rem; }
-  .fretboard.zoomed .fret-num{ font-size:0.75rem; }
-  .fret-num{ width:var(--fc); height:calc(var(--fc) * 0.92); }
+  /* 칸이 좁을 땐 자간을 더 당겨 두 글자(C#)가 들어가게 한다 */
+  .fretboard.tight  .fret-cell{ letter-spacing:-.05em; }
+  .fretboard.xtight .fret-cell{ letter-spacing:-.07em; }
+  .fret-num{
+    width:var(--fc); height:calc(var(--fc) * 0.92);
+    font-size:clamp(7px, calc(var(--fc) * 0.34), 15px);
+  }
   .fret-num.mark{ color:var(--ink-2); font-weight:700; }
 
 
@@ -655,7 +661,7 @@
     transition:background .1s var(--ease-out), transform .1s var(--ease-out);
   }
   .note-chip:active{ transform:scale(.95); background:var(--key-press); }
-  .note-chip .nm{ font-size:0.8125rem; font-weight:500; letter-spacing:.01em; }
+  .note-chip .nm{ font-size:clamp(0.8125rem, 1.6vw, 1rem); font-weight:500; letter-spacing:.01em; }
   .note-chip .dg{ font-size:0.625rem; color:var(--ink-3); font-weight:500; letter-spacing:.03em; font-variant-numeric:tabular-nums; }
   .note-chip.root{ background:var(--signal); border-color:var(--signal); }
   .note-chip.root .nm{ color:#fff; }
@@ -689,38 +695,6 @@
   /* 발광 링 — opacity만 움직여 합성 단계에서 처리된다 */
   /* 딱딱한 테두리 대신 방사형 그라디언트가 번지듯 퍼진다.
      들어올 땐 빠르게, 사라질 땐 천천히 — 실제 빛이 잦아드는 느낌 */
-  /* <button>은 절대배치 자식을 테두리 밖으로 내보내지 못한다.
-     그래서 빛무리를 버튼의 '형제'로 두고 뒤에 깔았다. */
-  .orb-wrap{
-    position:relative;
-    width:100%; max-width:132px; aspect-ratio:1/1;
-  }
-  .orb-wrap .metro-orb{ position:relative; z-index:1; width:100%; height:100%; max-width:none; }
-
-  /* 그라디언트 정지점을 아무리 촘촘히 찍어도 경계는 보인다.
-     계단식으로 색을 찍는 방식의 한계라, blur로 실제로 번지게 하는 게 답이다.
-     단순한 원 하나를 흐리면 물리적으로 매끈한 빛무리가 나온다. */
-  .orb-glow{
-    position:absolute; inset:14%;
-    border-radius:50%;
-    background:rgb(var(--signal-rgb));
-    filter:blur(26px);
-    opacity:0;
-    pointer-events:none;
-    z-index:0;
-  }
-  /* 소리 나는 순간 최대 밝기에서 시작해 곧바로 잦아든다.
-     transition은 클래스가 빠질 때부터 페이드가 시작돼 '팍' 하는 느낌이 안 난다. */
-  @keyframes orbPulse{
-    0%   { opacity:.85; transform:scale(1.06); }
-    18%  { opacity:.60; transform:scale(1.00); }
-    55%  { opacity:.22; transform:scale(.95);  }
-    100% { opacity:0;   transform:scale(.90);  }
-  }
-  .metro-orb.flash ~ .orb-glow{
-    animation:orbPulse .52s cubic-bezier(.16,.7,.3,1) forwards;
-  }
-
   .orb-label{
     position:relative; z-index:2;
     font-size:0.6875rem; font-weight:500; letter-spacing:.06em;
@@ -744,7 +718,7 @@
 
 
   @media (max-width:360px){
-    .orb-wrap{ max-width:96px; }
+    .metro-orb{ max-width:96px; }
     .metro-left .bpm-display .num{ font-size:3.25rem; }
   }
 
@@ -842,8 +816,6 @@
   @media (prefers-reduced-motion: reduce){
     nav.tabbar button.sounding::after{ opacity:.5; }
     nav.tabbar button.sounding.beat::after{ animation:none; opacity:.7; }
-    .metro-orb.flash ~ .orb-glow{ animation:none; opacity:.5; }
-    .orb-glow{ transform:none; }
   }
 </style>
 </head>
@@ -871,12 +843,9 @@
             <button class="btn key tap" id="tapTempoBtn">TAP</button>
           </div>
           <div class="metro-right">
-            <div class="orb-wrap">
-              <button class="metro-orb" id="metroStart" aria-label="시작 또는 정지">
-                <span class="orb-label" id="orbLabel">시작</span>
-              </button>
-              <span class="orb-glow"></span>
-            </div>
+            <button class="metro-orb" id="metroStart" aria-label="시작 또는 정지">
+              <span class="orb-label" id="orbLabel">시작</span>
+            </button>
             <div class="beat-dots" id="beatDots"></div>
           </div>
         </div>
@@ -1116,11 +1085,6 @@
         <div class="pill-group" id="trackToggles"></div>
       </div>
 
-      <div class="card">
-        <h2>드론</h2>
-        <p class="hint" style="margin:0 0 12px;">루트음을 지속시켜 자유롭게 즉흥 연습</p>
-        <button class="btn wide" id="jamDroneBtn">드론 재생</button>
-      </div>
     </section>
   </main>
 
@@ -1426,7 +1390,7 @@ function bindResetOnDouble(el, reset){
 }
 
 /* ===== 소리 나는 탭 표시 =====
-   여러 곳에서 동시에 울릴 수 있으므로(예: 잼 재생 + 드론) 출처별로 세어둔다. */
+   한 탭에서 여러 곳이 동시에 울릴 수 있으므로 출처별로 세어둔다. */
 const __sounding = {};
 // 박마다 호출 — 탭 발광이 템포에 맞춰 뛴다
 function pulseTab(tab){
@@ -1981,7 +1945,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     const lay    = layout();
     const FRETS  = lay.frets;
     const size   = lay.cell;
-    const showText = size >= 19;
+    const showText = size >= 14;   // 15프렛을 다 담으면 칸이 15~17px이 된다
 
     const scaleSet = new Map();
     type.intervals.forEach(iv=> scaleSet.set((rootPc+iv)%12, iv));
@@ -1990,6 +1954,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     fretboard.classList.toggle('compact', !showText);
     fretboard.classList.toggle('zoomed', zoom==='zoom');
     fretboard.classList.toggle('tight', size < 20);
+    fretboard.classList.toggle('xtight', size < 17);
     fretScroll.classList.toggle('fit', zoom==='fit');
 
     fretboard.innerHTML='';
@@ -2580,7 +2545,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   const JAM_BPM_DEFAULT = 80;
   let jamBpm = JAM_BPM_DEFAULT;
   const jamStart      = document.getElementById('jamStart');
-  const jamDroneBtn   = document.getElementById('jamDroneBtn');
 
   for(let i=0;i<12;i++){
     const o=document.createElement('option'); o.value=i; o.textContent=pcName(i); jamKey.appendChild(o);
@@ -2948,34 +2912,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     jamStart.classList.add('on');
     jamStart.querySelector('svg').innerHTML='<rect x="7" y="6" width="3.6" height="12" rx="1.2"/><rect x="13.4" y="6" width="3.6" height="12" rx="1.2"/>';
     setTabSounding('jam', true, 'play');
-  });
-
-  /* ---------- 드론 ---------- */
-  let droneNodes=null;
-  jamDroneBtn.addEventListener('click', ()=>{
-    if(droneNodes){
-      droneNodes.forEach(n=>{ try{n.stop();}catch(e){} });
-      droneNodes=null;
-      jamDroneBtn.textContent='드론 재생';
-      jamDroneBtn.classList.remove('danger');
-      setTabSounding('jam', false, 'drone');
-      return;
-    }
-    const ctx=getCtx();
-    const rootPc=parseInt(jamKey.value);
-    droneNodes=[];
-    [36+rootPc, 48+rootPc].forEach((midi,i)=>{
-      const o=ctx.createOscillator(), g=ctx.createGain();
-      o.type='sine'; o.frequency.value=midiToFreq(midi);
-      g.gain.setValueAtTime(0.0001,ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(i===0?0.14:0.07, ctx.currentTime+0.4);
-      o.connect(g).connect(getMaster());
-      o.start();
-      droneNodes.push(o);
-    });
-    jamDroneBtn.textContent='드론 정지';
-    jamDroneBtn.classList.add('danger');
-    setTabSounding('jam', true, 'drone');
   });
 
   /* ---------- 초기화 ---------- */
